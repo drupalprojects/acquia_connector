@@ -135,7 +135,7 @@ function acquia_spi_get_platform() {
 function acquia_spi_get_modules() {
   $modules = module_rebuild_cache();
   $result = array();
-  $keys_to_send = array('name', 'version', 'package', 'core');
+  $keys_to_send = array('name', 'version', 'package', 'core', 'project');
   foreach ($modules as $filename => $file) {
     $info = array();
     $info['status'] = $file->status;
