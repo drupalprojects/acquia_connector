@@ -38,7 +38,7 @@ function _acquia_agent_create_authenticator($body, $pass = NULL) {
 function _acquia_agent_call_provision_freetrial($body, $authenticator, $pass) {
   $md5_pass = md5($pass);
   $values = array('body' => $body, 'authenticator' => $authenticator);
-  $result = acquia_agent_call_an('acquia.agent.provision.freetrial', $values);
+  $result = xmlrpc(acquia_agent_network_address(), 'acquia.agent.provision.freetrial', $values);
   if ($errno = xmlrpc_errno()) {
     drupal_set_message(t('Error getting free trial: @message (@errno)', array('@message' => xmlrpc_error_msg(), '@errno' => xmlrpc_errno())), 'error');
     watchdog('acquia agent', '@message (@errno): %server - %method - <pre>@data</pre>', array('@message' => xmlrpc_error_msg(), '@errno' => xmlrpc_errno(), '%server' => acquia_agent_network_address(), '%method' => 'acquia.agent.provision.freetrial', '@data' => print_r($values, TRUE)), WATCHDOG_ERROR);
@@ -185,7 +185,7 @@ function _acquia_agent_an_trial_start_form_validate($form, &$form_state) {
 }
 
 function _acquia_agent_an_trial_start_form_submit($form, &$form_state) {
-  $result = acquia_agent_call_an('acquia.agent.mail.exists', $form_state['values']['email']);
+  $result = xmlrpc(acquia_agent_network_address(), 'acquia.agent.mail.exists', $form_state['values']['email']);
 
   if ($errno = xmlrpc_errno()) {
     acquia_agent_report_xmlrpc_error();
@@ -438,7 +438,7 @@ function _acquia_agent_an_trial_pass_old_form_validate($form, &$form_state) {
   if (!empty($val['email'])) {
     $params = array('email' => $val['email']);
     $args = array('body' => $params, 'authenticator' => _acquia_agent_create_authenticator($params, $form_state['values']['pass']));
-    $result = acquia_agent_call_an('acquia.agent.provision.get_user_details', $args);
+    $result = xmlrpc(acquia_agent_network_address(), 'acquia.agent.provision.get_user_details', $args);
     if ($errno = xmlrpc_errno()) {
       acquia_agent_report_xmlrpc_error();
       // Set form error to prevent switching to the next page.
@@ -468,6 +468,7 @@ function acquia_agent_settings_page($arg = NULL) {
     return acquia_agent_settings_form_page($banner);
   }
   else {
+    drupal_set_title(t('Get a free 30 day trial of the Acquia Network'));
     return drupal_get_form('acquia_agent_an_trial_form', $banner);
   }
 }
@@ -492,7 +493,6 @@ function acquia_agent_settings_form_page($banner = NULL) {
       drupal_set_message($error_message, 'error', FALSE);
     }
   }
-  drupal_set_title(t('Acquia settings'));
   return drupal_get_form('acquia_agent_settings_form', $banner);
 }
 
