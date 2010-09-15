@@ -30,7 +30,7 @@ define('SUBSCRIPTION_MESSAGE_LIFETIME', 15*60);
 function acquia_agent_menu() {
 
   $items['admin/settings/acquia-agent'] = array(
-    'title' => 'Link up with the Acquia Network',
+    'title' => 'Get a free 30 day trial of the Acquia Network',
     'description' => 'Connect your site to the Acquia Network.',
     'page callback' => 'acquia_agent_settings_page',
     'file' => 'acquia_agent.pages.inc',
