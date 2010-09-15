@@ -24,7 +24,7 @@ function _acquia_agent_create_authenticator($body, $pass = NULL) {
     $a['hash'] = _acquia_agent_hmac($md5_pass, $a['time'], $a['nonce'], $body);
   }
   else {
-    // rpc.acquia.com XML-RPX interface requires this parameter to be a string.
+    // rpc.acquia.com XML-RPC interface requires this parameter to be a string.
     // Just pass a dummy value.
     $a['hash'] = 'x';
   }
@@ -530,7 +530,7 @@ function acquia_agent_settings_form($form_state, $banner) {
 
   $form['cs']['buttons']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Save configuration'),
+    '#value' => t('Save keys'),
     '#validate' => array('acquia_agent_set_validate'),
     '#submit' => array('acquia_agent_set_submit'),
   );
@@ -624,6 +624,8 @@ function acquia_agent_delete_submit($form, &$form_state) {
   variable_del('acquia_network_address');
   variable_del('acquia_subscription_data');
   drupal_set_message(t('Your Acquia configuration has been deleted.'));
+  // Redirect to the path with the suffix.
+  $form_state['redirect'] = 'admin/settings/acquia-agent/connection';
   cache_clear_all();
 }
 
