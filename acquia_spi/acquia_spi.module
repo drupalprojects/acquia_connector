@@ -191,7 +191,7 @@ function _acquia_spi_generate_hashes($dir, $exclude_dirs, $limit_dirs = array())
   $fileinfo = array();
   if (is_dir($dir) && $handle = opendir($dir)) {
     while ($file = readdir($handle)) {
-      if (!in_array($file, array('.', '..', 'CVS', '.svn'))) {
+      if (!in_array($file, array('.', '..', 'CVS', '.svn', '.git', '.bzr'))) {
         $path = ($dir == '.')?$file:"$dir/$file";
 
         if (is_dir($path) && !in_array($path, $exclude_dirs) && (empty($limit_dirs) || in_array($path, $limit_dirs)) && ($file != 'translations')) {
