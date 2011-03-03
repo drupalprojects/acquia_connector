@@ -341,7 +341,7 @@ function acquia_agent_theme_registry_alter(&$theme_registry) {
  * Render an icon to display in the Administration Menu.
  */
 function acquia_agent_menu_icon() {
-  return '<img class="admin-menu-icon" src="'. base_path() . drupal_get_path('module', 'acquia_agent') . '/acquia.ico" height = "16" alt="" />';
+  return '<img class="admin-menu-icon" src="'. base_path() . drupal_get_path('module', 'acquia_agent') . '/acquia_drupal.ico" height = "16" alt="" />';
 }
 
 
