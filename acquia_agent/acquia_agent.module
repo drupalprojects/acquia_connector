@@ -312,7 +312,7 @@ function acquia_agent_translated_menu_link_alter(&$item, $map) {
     if (empty($subscription['timestamp']) || (time() - $subscription['timestamp'] > 60*60*24)) {
       $subscription = acquia_agent_check_subscription(array('no_heartbeat' => 1));
     }
-    if ($subscription['active']) {
+    if (!empty($subscription['active'])) {
       $icon = '<img src="'. base_path() . 'misc/watchdog-ok.png" height="10" alt="ok" />';
       $item['title'] = t("!icon Subscription active (expires !date)", array('!icon' => $icon, '!date' => format_date(strtotime($subscription['expiration_date']['value']), 'small')));
       $item['localized_options']['extra class'] .= " acquia-active-subscription";
