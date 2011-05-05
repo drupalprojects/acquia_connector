@@ -311,11 +311,8 @@ function acquia_agent_translated_menu_link_alter(&$item, $map) {
     return;
   }
   if ($item['title'] == 'acquia_subscription_status') {
-    $subscription = acquia_agent_settings('acquia_subscription_data');
-    if (empty($subscription['timestamp']) || (time() - $subscription['timestamp'] > 60*60*24)) {
-      $subscription = acquia_agent_check_subscription(array('no_heartbeat' => 1));
-    }
-    if (!empty($subscription['active'])) {
+    if (acquia_agent_subscription_is_active()) {
+      $subscription = acquia_agent_settings('acquia_subscription_data');
       $icon = '<img src="'. base_path() . 'misc/watchdog-ok.png" height="10" alt="ok" />';
       $item['title'] = t("!icon Subscription active (expires !date)", array('!icon' => $icon, '!date' => format_date(strtotime($subscription['expiration_date']['value']), 'small')));
       $item['localized_options']['extra class'] .= " acquia-active-subscription";
@@ -446,7 +443,7 @@ function acquia_agent_network_address($acquia_network_address = NULL) {
  * Helper function to check if an identifer and key exist.
  */
 function acquia_agent_has_credentials() {
-  return (bool)(variable_get('acquia_identifier', '') && variable_get('acquia_key', ''));
+  return (bool)(variable_get('acquia_identifier', FALSE) && variable_get('acquia_key', FALSE));
 }
 
 /**
@@ -457,6 +454,10 @@ function acquia_agent_subscription_is_active() {
   // Subscription cannot be active if we have no credentials.
   if (acquia_agent_has_credentials()) {
     $subscription = acquia_agent_settings('acquia_subscription_data');
+    // Make sure we have data at least once per day.
+    if (isset($subscription['timestamp']) && (time() - $subscription['timestamp'] > 60*60*24)) {
+      $subscription = acquia_agent_check_subscription(array('no_heartbeat' => 1));
+    }
     $active = !empty($subscription['active']);
   }
   return $active;
