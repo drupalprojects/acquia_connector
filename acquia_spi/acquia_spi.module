@@ -161,7 +161,12 @@ function acquia_spi_get_quantum() {
   // Get only active users.
   $quantum['users'] = db_result(db_query("SELECT COUNT(uid) FROM {users} WHERE status = 1"));
   // Get only active comments. NOTE: in case of comments, 0 is the active comment!
-  $quantum['comments'] = db_result(db_query("SELECT COUNT(cid) FROM {comments} WHERE status = 0"));
+  if (module_exists('comment')) {
+    $quantum['comments'] = db_result(db_query("SELECT COUNT(cid) FROM {comments} WHERE status = 0"));
+  }
+  else {
+    $quantum['comments'] = 0;
+  }
   return $quantum;
 }
 
