@@ -42,11 +42,12 @@ function _acquia_agent_xmlrpc() {
     xmlrpc_error($result->code, $result->error);
     return FALSE;
   }
+  
   $message = xmlrpc_message($result->data);
   // Now parse what we've got back
   if (!xmlrpc_message_parse($message)) {
     // XML error
-    xmlrpc_error(-32700, t('Parse error. Not well formed'));
+    xmlrpc_error(-32700, t('AA Parse error. Not well formed'));
     return FALSE;
   }
   // Is the message a fault?
@@ -235,6 +236,12 @@ function acquia_agent_http_request($context, $url, $headers = array(), $method =
       $result->error = $text;
   }
 
+  // DEBUG REMOVE ME!
+  //print '<pre>';
+  //print 'DATA: <br>';
+  //print_r($result);
+  // DEBUG REMOVE ME!
+
   $result->code = $code;
   return $result;
 }
@@ -276,6 +283,7 @@ function _acquia_agent_request($url, $method, $data) {
   if ($errno = xmlrpc_errno()) {
     watchdog('acquia agent', '@message (@errno): %server - %method - <pre>@data</pre>', array('@message' => xmlrpc_error_msg(), '@errno' => xmlrpc_errno(), '%server' => $url, '%method' => $method, '@data' => print_r($data, TRUE)), WATCHDOG_ERROR);
   }
+  
   return $result;
 }
 
@@ -293,7 +301,7 @@ function _acquia_agent_authenticator($params = array(), $identifier = NULL, $key
   $nonce = md5(acquia_agent_random_bytes(55));
   $authenticator['identifier'] = $identifier;
   $authenticator['time'] = $time;
-  $authenticator['hash'] = _acquia_agent_hmac($key, $time, $nonce, $params);
+  $authenticator['hash'] = _acquia_agent_hmac($key, $time, $nonce, array());
   $authenticator['nonce'] = $nonce;
   return $authenticator;
 }

@@ -501,9 +501,10 @@ function acquia_agent_settings_form_page($banner = NULL) {
 function acquia_agent_settings_form($form_state, $banner) {
   $identifier = acquia_agent_settings('acquia_identifier');
   $key = acquia_agent_settings('acquia_key');
+  $acquia_network_address = acquia_agent_settings('acquia_network_address');
 
   // Help for copying the identifier and key.
-  $copy_help = t('Copy from <a href="@subscriptions-overview">your subscriptions overview on the Acquia Network</a>.', array('@subscriptions-overview' => 'http://network.acquia.com/network/dashboard/subscription'));
+  $copy_help = t('Copy from <a href="@subscriptions-overview">your subscriptions overview on the Acquia Network</a>.', array('@subscriptions-overview' => 'http://acquia.com/network/dashboard/subscription'));
 
   $form['cs'] = array(
     '#type' => 'fieldset',
@@ -526,19 +527,19 @@ function acquia_agent_settings_form($form_state, $banner) {
     '#description' => $copy_help,
     '#required' => TRUE,
   );
-
   $form['cs']['buttons']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Save keys'),
+    '#value' => t('Save Settings'),
     '#validate' => array('acquia_agent_set_validate'),
     '#submit' => array('acquia_agent_set_submit'),
   );
   $form['cs']['buttons']['delete'] = array(
     '#type' => 'submit',
-    '#value' => t('Clear keys'),
+    '#value' => t('Clear Settings'),
     '#access' => (!empty($identifier) || !empty($key)),
     '#submit' => array('acquia_agent_delete_submit'),
   );
+
   $ssl_available = (in_array('ssl', stream_get_transports(), TRUE) && !defined('ACQUIA_DEVELOPMENT_NOSSL'));
 
   $form['ssl'] = array(
@@ -564,7 +565,7 @@ function acquia_agent_settings_form($form_state, $banner) {
     );
   }
   else {
-    $form['ssl']['acquia_agent_verify_peer']['#description'] .= ' <div class="error">'. t('PHP does not have SSL support.') .'</div>';
+    $form['ssl']['acquia_agent_verify_peer']['#description'] .= ' <div class="error">'. t('Your installation of PHP does not have SSL support. Please enable the SSL extension or compile PHP with SSL, see: <a href="http://php.net/manual/en/book.openssl.php" target="_blank">http://php.net/manual/en/book.openssl.php</a>.') .'</div>';
   }
   $form['banner'] = array('#value' => $banner);
   $form['#theme'] = 'acquia_agent_banner_form';
@@ -579,6 +580,7 @@ function acquia_agent_ssl_submit($form, &$form_state) {
   drupal_set_message(t('The configuration options have been saved.'));
 }
 
+
 /**
  * Validate acquia_agent_settings form submissions.
  */
@@ -589,10 +591,11 @@ function acquia_agent_set_validate($form, &$form_state) {
   }
   $identifier = $form_state['values']['acquia_identifier'];
   $key = $form_state['values']['acquia_key'];
+  $acquia_network_address = $form_state['values']['acquia_network_address'];
 
   // Don't make the XML-RPC call with empty values.
-  if (!empty($identifier) && !empty($key)) {
-    if (!acquia_agent_valid_credentials($identifier, $key)) {
+  if (!empty($identifier) && !empty($key) && !empty($rpc_server)) {
+    if (!acquia_agent_valid_credentials($identifier, $key, $acquia_network_address)) {
       $error_message = acquia_agent_connection_error_message();
       form_error($form, $error_message);
     }
@@ -904,3 +907,5 @@ function _acquia_agent_countries() {
     'Zimbabwe' => 'Zimbabwe',
   );
 };
+
+
