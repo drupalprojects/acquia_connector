@@ -474,7 +474,9 @@ function acquia_nspi_get_variables_data() {
   while ($result = db_fetch_array($results)) {
     $variables[$result['name']] = unserialize($result['value']);
   }
-  return serialize($variables);
+  // Collapse to JSON string to simplify transport. NSPI server will not
+  // re-encode for storage.
+  return drupal_to_js($variables);
 }
 
 /**
