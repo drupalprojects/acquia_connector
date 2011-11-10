@@ -476,7 +476,19 @@ function acquia_nspi_get_variables_data() {
   }
   // Collapse to JSON string to simplify transport. NSPI server will not
   // re-encode for storage.
-  return drupal_to_js($variables);
+  return _acquia_nspi_json($variables);
+}
+
+/**
+ * Helper function checks for PHP 5.2's json_encode or fallback to core.
+ */
+function _acquia_nspi_json($var) {
+  if (function_exists('json_encode')) {
+    return str_replace(array('<', '>', '&'), array('\u003c', '\u003e', '\u0026'), json_encode($var));
+  }
+  else {
+    return drupal_to_js($var);
+  }
 }
 
 /**
