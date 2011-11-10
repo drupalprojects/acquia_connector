@@ -223,6 +223,10 @@ function acquia_nspi_get() {
     $via_ssl = TRUE;
   }
 
+  $additional_data = array();
+  $additional_data = module_invoke_all('acquia_nspi_get');
+  $spi['additional_data'] = drupal_to_js($additional_data);
+
   if (!$via_ssl) {
     return $spi;
   } else {
@@ -237,6 +241,26 @@ function acquia_nspi_get() {
 
     return array_merge($spi,$spi_ssl);
   }
+}
+
+/**
+ * Implement hook_acquia_nspi_get() on behalf of the Security Review module.
+ */
+function security_review_acquia_nspi_get() {
+  // Collect the checklist.
+  $checklist = security_review_security_checks();
+  $module = 'security_review';
+  // Run only specific checks.
+  $checks = array('input_formats', 'admin_permissions', 'untrusted_php');
+  $results = array();
+  foreach ($checks as $check_name) {
+    // Some checks are dependent on local factors and may not be in the checklist.
+    if (isset($checklist[$module][$check_name])) {
+      $check_result = _security_review_run_check($module, $check_name, $checklist[$module][$check_name], FALSE);
+      $results[$module][$check_name] = drupal_to_js($check_result);
+    }
+  }
+  return $results;
 }
 
 /**
