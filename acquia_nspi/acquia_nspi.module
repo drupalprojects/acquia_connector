@@ -95,6 +95,14 @@ function acquia_nspi_cron() {
  * Implementation of hook_form_[form_id]_alter().
  */
 function acquia_nspi_form_acquia_agent_settings_form_alter(&$form) {
+  $subscription = acquia_agent_settings('acquia_subscription_data');
+
+  // Only warn about Security Review module if subscription is already set, to
+  // ease into setup.
+  if ($subscription && !module_exists('security_review')) {
+    drupal_set_message(t('For increased Insight security analysis you should install the <a href="!url">Security Review module</a>.', array('!url' => url('http://drupal.org/project/security_review'))), 'warning');
+  }
+
   $form['spi'] = array(
     '#type' => 'fieldset',
     '#title' => t('Acquia Network Site Profile Information'),
@@ -145,6 +153,24 @@ function acquia_nspi_form_acquia_agent_settings_form_alter(&$form) {
   );
 
   $form['buttons']['submit']['#submit'][] = 'acquia_nspi_agent_settings_submit';
+}
+
+/**
+ *  Implements hook_requirements().
+ */
+function acquia_nspi_requirements($phase) {
+  $requirements = array();
+
+  if ($phase == 'runtime' && !module_exists('security_review')) {
+    $requirements = array(
+      'acquia_nspi_security_review' => array(
+        'title' => t('Acquia Insight'),
+        'description' => t('For increased Insight security analysis you should install the <a href="!url">Security Review module</a>.', array('!url' => url('http://drupal.org/project/security_review'))),
+        'severity' => REQUIREMENT_WARNING,
+      ),
+    );
+  }
+  return $requirements;
 }
 
 /*
@@ -216,6 +242,7 @@ function acquia_nspi_get() {
     'distribution'   => $drupal_version['distribution'],
     'base_version'   => $drupal_version['base_version'],
     'build_data'     => $drupal_version,
+    'roles'          => _acquia_nspi_json(user_roles()),
   );
 
   $via_ssl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? TRUE : FALSE;
@@ -223,13 +250,16 @@ function acquia_nspi_get() {
     $via_ssl = TRUE;
   }
 
-  $additional_data = array();
-  $additional_data = module_invoke_all('acquia_nspi_get');
-  $spi['additional_data'] = drupal_to_js($additional_data);
+  $security_review_results = acquia_nspi_run_security_review();
+  if (!empty($security_review_results)) {
+    // JSON encode this additional data.
+    $spi['additional_data'] = _acquia_nspi_json($security_review_results);
+  }
 
   if (!$via_ssl) {
     return $spi;
-  } else {
+  }
+  else {
 
     // Values returned only over SSL
     $spi_ssl = array(
@@ -244,20 +274,25 @@ function acquia_nspi_get() {
 }
 
 /**
- * Implement hook_acquia_nspi_get() on behalf of the Security Review module.
+ * Run some checks from the Security Review module.
  */
-function security_review_acquia_nspi_get() {
-  // Collect the checklist.
-  $checklist = security_review_security_checks();
-  $module = 'security_review';
-  // Run only specific checks.
-  $checks = array('input_formats', 'admin_permissions', 'untrusted_php');
+function acquia_nspi_run_security_review() {
   $results = array();
-  foreach ($checks as $check_name) {
-    // Some checks are dependent on local factors and may not be in the checklist.
-    if (isset($checklist[$module][$check_name])) {
-      $check_result = _security_review_run_check($module, $check_name, $checklist[$module][$check_name], FALSE);
-      $results[$module][$check_name] = drupal_to_js($check_result);
+  if (module_exists('security_review')) {
+    // Collect the checklist.
+    $checklist = security_review_security_checks();
+    $module = 'security_review';
+    // Run only specific checks.
+    $checks = array('input_formats', 'admin_permissions', 'untrusted_php', 'private_files', 'upload_extensions');
+    foreach ($checks as $check_name) {
+      // Some checks are dependent on local factors and may not be in the checklist.
+      if (isset($checklist[$module][$check_name])) {
+        $check_result = _security_review_run_check($module, $check_name, $checklist[$module][$check_name], FALSE);
+        // Unset some text that does not need to be sent.
+        unset($check_result['success']);
+        unset($check_result['failure']);
+        $results[$module][$check_name] = $check_result;
+      }
     }
   }
   return $results;
@@ -728,7 +763,7 @@ function acquia_nspi_get_system_status() {
 
   return $requirements;
 }
-  
+
 /**
  * Gather information about modules on the site.
  *
