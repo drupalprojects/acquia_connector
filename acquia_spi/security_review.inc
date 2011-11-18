@@ -6,7 +6,7 @@
  */
 
 // Define the version of this file in case it's used outside of its module.
-define('SECURITY_REVIEW_VERSION', '1.2');
+define('SECURITY_REVIEW_VERSION', '6.x-1.2');
 
 /**
  * Public function for running Security Review checklist and returning results.
