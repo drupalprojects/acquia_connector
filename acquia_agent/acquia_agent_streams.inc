@@ -301,7 +301,7 @@ function _acquia_agent_authenticator($params = array(), $identifier = NULL, $key
   $nonce = md5(acquia_agent_random_bytes(55));
   $authenticator['identifier'] = $identifier;
   $authenticator['time'] = $time;
-  $authenticator['hash'] = _acquia_agent_hmac($key, $time, $nonce, array());
+  $authenticator['hash'] = _acquia_agent_hmac($key, $time, $nonce, $params);
   $authenticator['nonce'] = $nonce;
   return $authenticator;
 }
