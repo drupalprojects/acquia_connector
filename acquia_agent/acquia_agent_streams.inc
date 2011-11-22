@@ -301,7 +301,7 @@ function _acquia_agent_authenticator($params = array(), $identifier = NULL, $key
   $nonce = md5(acquia_agent_random_bytes(55));
   $authenticator['identifier'] = $identifier;
   $authenticator['time'] = $time;
-  $authenticator['hash'] = _acquia_agent_hmac($key, $time, $nonce, array());
+  $authenticator['hash'] = _acquia_agent_hmac($key, $time, $nonce, $params);
   $authenticator['nonce'] = $nonce;
   return $authenticator;
 }
@@ -311,10 +311,19 @@ function _acquia_agent_authenticator($params = array(), $identifier = NULL, $key
  * With addition of xmlrpc params.
  */
 function _acquia_agent_hmac($key, $time, $nonce, $params) {
-  return base64_encode(
-    pack("H*", sha1((str_pad($key, 64, chr(0x00)) ^ (str_repeat(chr(0x5c), 64))) .
-    pack("H*", sha1((str_pad($key, 64, chr(0x00)) ^ (str_repeat(chr(0x36), 64))) .
-    $time .':'. $nonce .':'. $key .':'. serialize($params)))))
-  );
+  if (empty($params['rpc_version']) || $params['rpc_version'] < 2) {
+    $encoded_params = serialize($params);
+    $string = $time .':'. $nonce .':'. $key .':'. $encoded_params;
+
+    return base64_encode(
+      pack("H*", sha1((str_pad($key, 64, chr(0x00)) ^ (str_repeat(chr(0x5c), 64))) .
+      pack("H*", sha1((str_pad($key, 64, chr(0x00)) ^ (str_repeat(chr(0x36), 64))) .
+      $string)))));
+  }
+  else {
+    $encoded_params = json_encode($params);
+    $string = $time .':'. $nonce .':'. $encoded_params;
+    return sha1((str_pad($key, 64, chr(0x00)) ^ (str_repeat(chr(0x5c), 64))) . pack("H*", sha1((str_pad($key, 64, chr(0x00)) ^ (str_repeat(chr(0x36), 64))) . $string)));
+  }
 }
 
