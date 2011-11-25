@@ -31,7 +31,7 @@ function acquia_spi_requirements($phase) {
         $requirements['acquia_spi'] = array(
           'title' => t('Acquia Network SPI'),
           'severity' => REQUIREMENT_OK,
-          'value' => t('Last sent @time ago', array('@time' => format_interval(REQUEST_TIME - $last_sent))),
+          'value' => t('Last sent !time ago', array('!time' => format_interval(time() - $last_sent))),
           'description' => t('You can <a href="!spi-send">manually send SPI data</a>.', array('!spi-send' => url('admin/settings/acquia-agent/spi-send', array('query' => drupal_get_destination())))),
         );
       }
