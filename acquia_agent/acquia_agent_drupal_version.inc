@@ -12,12 +12,12 @@
 /**
  * Is this an Acquia Drupal install?
  */
-define('IS_ACQUIA_DRUPAL', TRUE);
+define('IS_ACQUIA_DRUPAL', FALSE);
 
 /**
  * Acquia Drupal version information (only used if IS_ACQUIA_DRUPAL).
  */
-define('ACQUIA_DRUPAL_VERSION' , '1.2.33 (Drupal 6.20 core)');
-define('ACQUIA_DRUPAL_SERIES'  , '1.0');
-define('ACQUIA_DRUPAL_BRANCH'  , '1.x-6.x');
-define('ACQUIA_DRUPAL_REVISION', '5349');
+define('ACQUIA_DRUPAL_VERSION' , 'ACQ_version_ACQ');
+define('ACQUIA_DRUPAL_SERIES'  , 'ACQ_series_ACQ');
+define('ACQUIA_DRUPAL_BRANCH'  , 'ACQ_branch_ACQ');
+define('ACQUIA_DRUPAL_REVISION', 'ACQ_rev_ACQ');
