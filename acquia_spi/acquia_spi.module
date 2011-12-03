@@ -536,7 +536,7 @@ function acquai_spi_get_last_nodes() {
  *
  */
 function acquai_spi_get_watchdog_size() {
-  if(module_exists('dblog')) {
+  if (module_exists('dblog')) {
     return db_result(db_query('SELECT COUNT(*) as num FROM {watchdog}'));
   }
 }
@@ -551,11 +551,14 @@ function acquai_spi_get_watchdog_size() {
  *
  */
 function acquia_spi_get_watchdog_data() {
-  $sql = "SELECT wid, severity, type, message, timestamp FROM {watchdog} WHERE severity IN (0,2) AND timestamp > UNIX_TIMESTAMP() - 3600";
-  $res = db_query($sql);
   $wd = array();
-  while($row = db_fetch_array($res)) {
-    $wd[$row['severity']] = $row;
+  if (module_exists('dblog')) {
+    $sql = "SELECT wid, severity, type, message, timestamp FROM {watchdog} WHERE severity IN (0,2) AND timestamp > UNIX_TIMESTAMP() - 3600";
+    $res = db_query($sql);
+    
+    while($row = db_fetch_array($res)) {
+      $wd[$row['severity']] = $row;
+    }
   }
   return $wd;
 }
@@ -571,18 +574,18 @@ function acquia_spi_get_watchdog_data() {
 function acquai_spi_get_404s() {
   $data = array();
   $row = 0;
-  
-  $results = db_query_range('SELECT message, hostname, referer, timestamp FROM {watchdog} WHERE type = "page not found" AND timestamp > UNIX_TIMESTAMP()-3600 AND message NOT IN("UPGRADE.txt", "MAINTAINERS.txt", "README.txt", "INSTALL.pgsql.txt", "INSTALL.txt", "LICENSE.txt", "INSTALL.mysql.txt", "COPYRIGHT.txt", "CHANGELOG.txt") ORDER BY timestamp DESC', 0, 10);
-  
-  while ($result = db_fetch_array($results)) {
-    $data[$row]['message'] = $result['message'];
-    $data[$row]['hostname'] = $result['hostname'];
-    $data[$row]['referer'] = $result['referer'];
-    $data[$row]['timestamp'] = $result['timestamp'];
-    
-    $row++;
+  if (module_exists('dblog')) {
+    $results = db_query_range('SELECT message, hostname, referer, timestamp FROM {watchdog} WHERE type = "page not found" AND timestamp > UNIX_TIMESTAMP()-3600 AND message NOT IN("UPGRADE.txt", "MAINTAINERS.txt", "README.txt", "INSTALL.pgsql.txt", "INSTALL.txt", "LICENSE.txt", "INSTALL.mysql.txt", "COPYRIGHT.txt", "CHANGELOG.txt") ORDER BY timestamp DESC', 0, 10);
+
+    while ($result = db_fetch_array($results)) {
+      $data[$row]['message'] = $result['message'];
+      $data[$row]['hostname'] = $result['hostname'];
+      $data[$row]['referer'] = $result['referer'];
+      $data[$row]['timestamp'] = $result['timestamp'];
+      $row++;
+    }
   }
-  
+
   return $data;
 }
 
@@ -627,16 +630,16 @@ function _acquia_spi_json($var) {
  *
  */
 function acquia_spi_get_failed_logins() {
-
-  $cron_interval = variable_get('acquia_spi_cron_interval', 8*60*60);
-
-  $query = 'SELECT message, variables, timestamp FROM {watchdog} WHERE message LIKE "login attempt failed%" AND now()-timestamp > %s ORDER BY timestamp DESC';
-  $results = db_query($query,$cron_interval);
   $last_logins = array();
+  $cron_interval = variable_get('acquia_spi_cron_interval', 8*60*60);
+  if (module_exists('dblog')) {
+    $query = 'SELECT message, variables, timestamp FROM {watchdog} WHERE message LIKE "login attempt failed%" AND now()-timestamp > %s ORDER BY timestamp DESC';
+    $results = db_query($query,$cron_interval);
 
-  while ($result = db_fetch_array($results)) {
-    $variables = unserialize($result['variables']);
-    $last_logins['failed'][$result['timestamp']] = $variables['%user'];
+    while ($result = db_fetch_array($results)) {
+      $variables = unserialize($result['variables']);
+      $last_logins['failed'][$result['timestamp']] = $variables['%user'];
+    }
   }
   return $last_logins;
 }
@@ -647,14 +650,14 @@ function acquia_spi_get_failed_logins() {
  * @return boolean
  */
 function acquia_spi_get_super_name() {
-   $return = null;
-   $sql = "SELECT name from {users} WHERE uid = 1 AND (name LIKE '%admin%' OR name LIKE '%root%') LIMIT 1";
-   $result = db_result(db_query($sql));
-   if ($result) {
-     return TRUE;
-   } else {
-     return FALSE;
-   }
+  $sql = "SELECT name from {users} WHERE uid = 1 AND (name LIKE '%admin%' OR name LIKE '%root%') LIMIT 1";
+  $result = db_result(db_query($sql));
+  if ($result) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
 }
 
 /**
@@ -666,21 +669,20 @@ function acquia_spi_get_super_name() {
  *
  */
 function acquia_spi_get_admin_count() {
-   $count = null;
-   $sql = "SELECT COUNT(DISTINCT u.uid) as count
-              FROM {users} u, {users_roles} ur, {permission} p
-              WHERE u.uid = ur.uid
-                AND ur.rid = p.rid
-                AND u.status = 1
-                AND (p.perm LIKE '%administer permissions%' OR p.perm LIKE '%administer users%')";
-   // get the list of superuser perms from drupal.org
-   $result = db_query($sql);
-   while ($r = db_fetch_array($result)) {
-      $count = $r['count'];
-      break;
-   }
+  $count = NULL;
+  $sql = "SELECT COUNT(DISTINCT u.uid) as count
+             FROM {users} u, {users_roles} ur, {permission} p
+             WHERE u.uid = ur.uid
+               AND ur.rid = p.rid
+               AND u.status = 1
+               AND (p.perm LIKE '%administer permissions%' OR p.perm LIKE '%administer users%')";
+  $result = db_query($sql);
+  while ($r = db_fetch_array($result)) {
+    $count = $r['count'];
+    break;
+  }
 
-   return is_numeric($count) ? $count : null;
+  return is_numeric($count) ? $count : NULL;
 }
 
 /**
@@ -806,9 +808,6 @@ function acquia_spi_get_platform_mysql_data() {
       case 'Qcache_not_cached':
         $ret['Qcache_not_cached'] = $row['Value'];
         break;
-
-
-
     }
   }
   return $ret;
@@ -1033,4 +1032,3 @@ function acquia_spi_hash_path($path = '') {
   }
   return $hash;
 }
-
