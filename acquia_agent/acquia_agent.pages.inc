@@ -31,7 +31,11 @@ function _acquia_agent_create_authenticator($body, $pass = NULL) {
 /**
  * Hash a password according to Drupal's password_crypt and settings from remote.
  */
-function _acquia_agent_hash_password_crypt($algorithm, $pass, $setting) {
+function _acquia_agent_hash_password_crypt($algorithm, $pass, $setting, $extra_md5 = FALSE) {
+  // Server may state that password needs to be hashed with MD5 first.
+  if ($extra_md5) {
+    $pass = md5($pass);
+  }
   // If module phpass exists include its password.inc, otherwise use the one
   // included with Acquia Agent (a copy of phpass' password.inc).
   if (module_exists('phpass')) {
@@ -41,6 +45,11 @@ function _acquia_agent_hash_password_crypt($algorithm, $pass, $setting) {
   else {
     module_load_include('inc', 'acquia_agent', 'password');
     $hash = _password_crypt($algorithm, $pass, $setting);
+  }
+  // Match the hash stored on the server which has prefix character 'U' if
+  // password was first hashed with MD5.
+  if ($extra_md5) {
+    $hash = 'U' . $hash;
   }
   return $hash;
 }
@@ -181,7 +190,7 @@ function _acquia_agent_an_trial_start_form(&$form_state) {
       '#type' => 'submit',
       '#value' => 'Next >'),
     'settings_link' => array(
-      '#value' => '<br/>'.l(t('I already have an active Acquia subscription, and now I want to connect this site to it'), 'admin/settings/acquia-agent/connection')),
+      '#value' => '<br/>'.l(t('If you already have an active Acquia Network subscription click here to connect this site to it.'), 'admin/settings/acquia-agent/setup')),
     // Special value elements.
     'this_step' => array(
       '#type' => 'value',
@@ -478,7 +487,10 @@ function acquia_agent_settings_page($arg = NULL) {
   $banner = theme('image', $path .'/acquia_vertical_banner.png');
   drupal_add_css($path .'/acquia_agent.css', 'module', 'all', FALSE);
 
-  if (($identifier && $key) || $arg == 'connection') {
+  if (empty($identifier) && empty($key) && $arg == 'setup') {
+    return drupal_get_form('acquia_agent_automatic_setup_form');
+  }
+  elseif (($identifier && $key) || $arg == 'connection') {
     return acquia_agent_settings_form_page($banner);
   }
   else {
@@ -495,10 +507,6 @@ function acquia_agent_settings_form_page($banner = NULL) {
   $key = acquia_agent_settings('acquia_key');
 
   $output =  '';
-  // If id/key are not set begin automatic setup.
-  if (empty($identifier) && empty($key)) {
-    return drupal_get_form('acquia_agent_automatic_setup_form');
-  }
   // Check $_POST so we don't send extra XML-RPC requests during form submission.
   if ($identifier && $key && empty($_POST)) {
     // Check our connection to the Acquia Network and validity of the crenditials.
@@ -526,7 +534,7 @@ function acquia_agent_automatic_setup_form($form_state) {
 function _acquia_agent_automatic_setup_form_start(&$form_state) {
   global $base_url;
   $form = array(
-    '#prefix' =>  t('To setup the connection to your Acquia Network account enter your Acquia.com account email address and password.'),
+    '#prefix' =>  t('To setup the connection to your Acquia Network subscription enter your Acquia.com account email address and password.'),
     'email' => array(
       '#type' => 'textfield',
       '#title' => t('Acquia Network email'),
@@ -540,6 +548,7 @@ function _acquia_agent_automatic_setup_form_start(&$form_state) {
       '#size' => 32,
       '#required' => TRUE,
     ),
+    '#suffix' =>  t('<a href="!url">If you prefer to manually enter your Acquia subscription information you may do so on the connection page</a>.', array('!url' => url('admin/settings/acquia-agent/connection'))),
     'continue' => array(
       '#type' => 'submit',
       '#value' => t('Next'),
@@ -581,22 +590,18 @@ function acquia_agent_automatic_setup_form_validate($form, &$form_state) {
     if ($errno = xmlrpc_errno()) {
       acquia_agent_report_xmlrpc_error();
       // Set form error to prevent switching to the next page.
-      form_set_error(''); // @todo message
+      form_set_error('');
     }
     elseif (!$result) {
-      // Email doesn't exist
+      // Email doesn't exist.
       form_set_error('email', t("Email address not found on the Acquia Network."));
     }
     else {
       // Build hashed password from account password settings for further 
       // XML-RPC communications with acquia.com.
-      $pass = _acquia_agent_hash_password_crypt($result['algorithm'], $form_state['values']['pass'], $result['hash_setting']);
+      $pass = _acquia_agent_hash_password_crypt($result['algorithm'], $form_state['values']['pass'], $result['hash_setting'], $result['extra_md5']);
       $form_state['storage']['pass'] = $pass;
     }
-  }
-  else {
-    // Test credentials and error if so @todo
-    $sub = $form_state['storage']['subscriptions'][$form_state['values']['subscription']];
   }
 }
 
@@ -627,14 +632,14 @@ function _acquia_agent_automatic_start_submit(&$form_state) {
   if ($errno = xmlrpc_errno()) {
     acquia_agent_report_xmlrpc_error();
     // Set form error to prevent switching to the next page.
-    form_set_error(''); // @todo
+    form_set_error('');
   }
   elseif (!$result) {
     // Email doesn't exist
-    form_set_error('email', t("some error")); // @todo
+    form_set_error('email', t("Server error, please submit again."));
   }
   elseif ($result['is_error']) {
-    form_set_error('email', t("some error from server side")); // @todo
+    form_set_error('email', t("Server error, please submit again."));
   }
   elseif (!isset($result['body']['subscription'])) {
     form_set_error('host', t('No subscriptions were found.'));
@@ -649,7 +654,6 @@ function _acquia_agent_automatic_start_submit(&$form_state) {
     $sub = $result['body']['subscription'][0];
     variable_set('acquia_key', $sub['key']);
     variable_set('acquia_identifier', $sub['identifier']);
-    // @todo Test credentials.
     drupal_goto('admin/settings/acquia-agent/connection');
   }
 }
