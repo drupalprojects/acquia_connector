@@ -627,7 +627,7 @@ function _acquia_agent_automatic_start_submit(&$form_state) {
   // _acquia_agent_setup_form_validate().
   $authenticator = _acquia_agent_create_authenticator($body, $form_state['storage']['pass']);
   $data = array('body' => $body, 'authenticator' => $authenticator);
-  $result = xmlrpc(acquia_agent_network_address(), 'acquia.agent.get.credentials', $data);
+  $result = xmlrpc(acquia_agent_network_address(), 'acquia.agent.subscription.credentials', $data);
 
   if ($errno = xmlrpc_errno()) {
     acquia_agent_report_xmlrpc_error();
