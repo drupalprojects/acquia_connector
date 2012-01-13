@@ -308,7 +308,7 @@ function acquia_agent_translated_menu_link_alter(&$item, $map) {
     }
     if ($subscription['active']) {
       $icon = '<img src="'. base_path() . 'misc/watchdog-ok.png" height="10" alt="ok" />';
-      $item['title'] = t("!icon Subscription active (expires !date)", array('!icon' => $icon, '!date' => format_date(strtotime($subscription['expiration_date']['value']), 'small')));
+      $item['title'] = t("!icon Subscription active (expires @date)", array('!icon' => $icon, '@date' => format_date(strtotime($subscription['expiration_date']['value']), 'small')));
       $item['localized_options']['extra class'] .= " acquia-active-subscription";
       $item['localized_options']['attributes']['title'] = $subscription['product']['view'];
       $item['href'] = $subscription['href'];
