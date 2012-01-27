@@ -97,394 +97,34 @@ function _acquia_agent_call_provision_freetrial($body, $authenticator, $pass) {
 /**
  *  Main 30 day trial form function
  */
-function acquia_agent_an_trial_form(&$form_state, $banner) {
-  $cur_step = NULL;
-  if (!empty($form_state['storage']['step'])) {
-    $function = '_acquia_agent_an_trial_'. $form_state['storage']['step'] .'_form';
-    return $function($form_state, $banner);
-  }
-  else {
-    return _acquia_agent_an_trial_start_form($form_state, $banner);
-  }
-}
-
-/**
- * 30 day trial form submit dispatch function
- */
-function acquia_agent_an_trial_form_submit($form, &$form_state) {
-  if (empty($form_state['storage'])) {
-    $form_state['storage'] = array();
-    $form_state['storage']['values'] = array();
-  }
-
-  // Store submitted form values. Overwrite old values with new.
-  $form_state['storage']['values'] = $form_state['values'] + $form_state['storage']['values'];
-
-  // Call the step-specific submit handler.
-  $submit_function = '_acquia_agent_an_trial_'. $form_state['values']['this_step']. '_form_submit';
-  if (function_exists($submit_function)) {
-    $submit_function($form, $form_state);
-  }
-
-  // Set up next step.
-  if (!empty($form_state['values']['step_next'])) {
-    $form_state['storage']['step'] = $form_state['values']['step_next'];
-  }
-  elseif (acquia_agent_has_credentials()) {
-    // The proces is complete.
-    drupal_set_message(t('The site "@site" is now connected to the Acquia network. A welcome email has been sent to the email address you provided', array('@site' => $form_state['values']['subscription_name'])));
-    unset($form_state['storage']);
-    $form_state['redirect'] = 'admin/settings/acquia-agent';
-  }
-}
-
-function _acquia_agent_provision_freetrial($form, &$form_state) {
-  $val = $form_state['values'] + $form_state['storage']['values'];
-  $body = array();
-
-  $body['accept_terms_checkbox'] = 1;
-
-  $new_user = empty($form_state['storage']['userdata']['uid']);
-  if ($new_user) {
-    // New user
-    $body['primary_email'] = $val['email'];
-
-    $pass = $val['pass'];
-    // Send password as hash.
-    $body['pass'] = md5($val['pass']);
-    $body['billing_first_name'] = $val['billing_first_name'];
-    $body['billing_last_name'] = $val['billing_last_name'];
-  }
-  else {
-    // Existing user
-    $body['uid'] = $form_state['storage']['userdata']['uid'];
-    $pass = $val['pass'];
-  }
-
-  $body['subscription_name'] = $val['subscription_name'];
-  $body['site_url'] = $val['site_url'];
-  $body['billing_company'] = $val['billing_company'];
-  $body['billing_phone'] = $val['billing_phone'];
-  $body['billing_country_acquia'] = $val['billing_country_acquia'];
-  $auth = _acquia_agent_create_authenticator($body, ($new_user ? NULL : $pass));
-  return _acquia_agent_call_provision_freetrial($body, $auth, $pass);
-}
-
-/**
- * Start form page
- *
- * Where user decides if they want to enter their email and get a new subscrition or go to the settings page
- * and use existing AN subscription id/key
- */
-function _acquia_agent_an_trial_start_form(&$form_state) {
+function acquia_agent_an_start_form(&$form_state, $banner) {
   $form = array(
     '#prefix' =>  acquia_agent_an_info_header(),
-    'email' => array (
-      '#type' => 'textfield',
-      '#title' => t('E-mail address'),
-      '#size' => 32,
-      '#maxlength' => 64,
-      '#required' => TRUE,
-    ),
-    'continue' => array(
-      '#type' => 'submit',
-      '#value' => 'Next >'),
-    'settings_link' => array(
-      '#value' => '<br/>'.l(t('If you already have an active Acquia Network subscription click here to connect this site to it.'), 'admin/settings/acquia-agent/setup')),
-    // Special value elements.
-    'this_step' => array(
-      '#type' => 'value',
-      '#value' => 'start',
-    ),
-    '#validate' => array('_acquia_agent_an_trial_start_form_validate'),
-  );
-  return $form;
-}
-
-function _acquia_agent_an_trial_start_form_validate($form, &$form_state) {
-  if (!valid_email_address($form_state['values']['email'])) {
-    form_set_error('email', t('Email is invalid'));
-  }
-}
-
-function _acquia_agent_an_trial_start_form_submit($form, &$form_state) {
-  $result = xmlrpc(acquia_agent_network_address(), 'acquia.agent.mail.exists', $form_state['values']['email']);
-
-  if ($errno = xmlrpc_errno()) {
-    acquia_agent_report_xmlrpc_error();
-    // Set form error to prevent switching to the next page.
-    form_set_error('email');
-  }
-  elseif ($result) {
-    // Existing user.
-    $form_state['values']['step_next'] = 'pass_old';
-  }
-  else {
-    // New user.
-    $form_state['values']['step_next'] = 'details_new';
-  }
-}
-
-/**
- * New user form
- */
-function _acquia_agent_an_trial_details_new_form(&$form_state, $banner = NULL) {
-  global $user;
-
-  $val = $form_state['storage']['values'];
-  $form = array(
-    '#prefix' =>  '<p>'.t('Start your subscription by providing the information below. We\'ll create a free trial subscription for you, and set up this site with the subscription keys.').'</p>',
-    'email' => array (
-      '#type' => 'item',
-      '#title' => t('E-mail address'),
-      '#value' => $val['email'],
-      '#required' => TRUE,
-    ),
-    'subscription_name' => array(
-      '#type' => 'textfield',
-      '#title' => t('Subscription name'),
-      '#size' => 32,
-      '#maxlength' => 64,
-      '#required' => TRUE,
-      '#default_value' => variable_get('site_name', 'Site for ' . $user->name),
-    ),
-    'site_url' => array(
-      '#type' => 'textfield',
-      '#title' => t('Your site\'s URL'),
-      '#size' => 32,
-      '#maxlength' => 128,
-      '#default_value' => url(NULL, array('absolute' => TRUE)),
-    ),
-    'billing_country_acquia' => array(
-      '#type' => 'select',
-      '#title' => t('Country'),
-      '#options' => _acquia_agent_countries(),
-      '#required' => TRUE
-    ),
-    'pass' => array(
-      '#type' => 'password_confirm',
-      '#title' => t('Create your Acquia.com password'),
-      '#size' => 32,
-      '#required' => TRUE,
-    ),
-    'billing_first_name' => array (
-      '#type' => 'textfield',
-      '#title' => t('First name'),
-      '#size' => 32,
-      '#maxlength' => 32,
-      '#required' => TRUE,
-    ),
-    'billing_last_name' => array (
-      '#type' => 'textfield',
-      '#title' => t('Last name'),
-      '#size' => 32,
-      '#maxlength' => 32,
-      '#required' => TRUE,
-    ),
-    'billing_company' => array (
-      '#type' => 'textfield',
-      '#title' => t('Organization name'),
-      '#size' => 32,
-      '#maxlength' => 64,
-      '#required' => TRUE,
-    ),
-    'billing_phone' => array (
-      '#type' => 'textfield',
-      '#title' => t('Phone'),
-      '#size' => 32,
-      '#maxlength' => 64,
-      '#required' => TRUE,
-    ),
-    'submit' => array (
-      '#type' => 'submit',
-      '#value' => t('Start my new 30-day free trial for this site'),
-    ),
-    // Special value elements.
-    'this_step' => array(
-      '#type' => 'value',
-      '#value' => 'details_new',
-    ),
-    
     'banner' => array('#value' => $banner),
     '#theme' => 'acquia_agent_banner_form',
-    '#validate' => array('_acquia_agent_an_trial_details_form_validate'),
   );
   return $form;
-}
-
-function _acquia_agent_an_trial_details_form_validate($form, &$form_state) {
-  if (strlen($form_state['values']['site_url']) && !valid_url($form_state['values']['site_url'], TRUE)) {
-    form_set_error('site_url', 'Please enter a valid website URL or leave the field empty. A valid website URL should include http:// or https://.');
-  }
-  // We don't want to do the provisioning if there are any errors.
-  if (!form_get_errors()) {
-    // Do the provisioning at the validation stage so a form error doesn't lose form values.
-    $result = _acquia_agent_provision_freetrial($form, $form_state);
-    if (!$result) {
-      form_set_error('', '');
-    }
-    else {
-      $form_state['result'] = $result['body'];
-    }
-  }
-}
-
-/**
- * Existing user form page
- */
-function _acquia_agent_an_trial_details_old_form(&$form_state, $banner = NULL) {
-  $ud = $form_state['storage']['userdata'];
-
-  $form = array(
-    '#prefix' => '<p>'. t('Let\'s get started creating a new trial subscription for your account.') .'</p>',
-    'name' => array(
-      '#type' => 'item',
-      '#title' => t('My account username'),
-      '#value' => $ud['name'],
-      '#required' => TRUE,
-    ),
-    'first_name' => array (
-      '#type' => 'item',
-      '#title' => t('First name'),
-      '#value' => $ud['profile_firstname'],
-      '#required' => TRUE,
-    ),
-    'last_name' => array (
-      '#type' => 'item',
-      '#title' => t('Last name'),
-      '#value' => $ud['profile_lastname'],
-      '#required' => TRUE,
-    ),
-    'subscription_name' => array(
-      '#type' => 'textfield',
-      '#title' => t('Subscription name'),
-      '#size' => 32,
-      '#maxlength' => 64,
-      '#required' => TRUE,
-      '#default_value' => variable_get('site_name', t('My new site')),
-    ),
-    'site_url' => array(
-      '#type' => 'textfield',
-      '#title' => t('Your site\'s URL'),
-      '#size' => 32,
-      '#maxlength' => 128,
-      '#default_value' => url(NULL, array('absolute' => TRUE)),
-    ),
-    'billing_country_acquia' => array(
-      '#type' => 'select',
-      '#title' => t('Country'),
-      '#options' => _acquia_agent_countries(),
-      '#required' => TRUE,
-      '#default_value' => $ud['profile_country'],
-    ),
-    'billing_company' => array (
-      '#type' => 'textfield',
-      '#title' => t('Company'),
-      '#size' => 32,
-      '#maxlength' => 64,
-      '#default_value' => $ud['profile_organization'],
-      '#required' => TRUE,
-    ),
-    'billing_phone' => array (
-      '#type' => 'textfield',
-      '#title' => t('Phone'),
-      '#size' => 32,
-      '#maxlength' => 64,
-      '#default_value' => $ud['profile_officephone'],
-      '#required' => TRUE,
-    ),
-    'submit' => array (
-      '#type' => 'submit',
-      '#value' => t('Start my new 30-day free trial for this site'),
-    ),
-    // Special value elements.
-    'this_step' => array(
-      '#type' => 'value',
-      '#value' => 'details_old',
-    ),
-    
-    'banner' => array('#value' => $banner),
-    '#theme' => 'acquia_agent_banner_form',
-    '#validate' => array('_acquia_agent_an_trial_details_form_validate'),
-  );
-
-  return $form;
-}
-
-/**
- * Existing user password page
- *
- */
-function _acquia_agent_an_trial_pass_old_form(&$form_state, $banner = NULL) {
-  $values = $form_state['storage']['values'];
-  $form = array(
-    '#prefix' =>  acquia_agent_an_info_header(),
-    'form_header' => array(
-      '#value' => acquia_agent_existing_account_msg(),
-    ),
-    'email' => array (
-      '#type' => 'item',
-      '#title' => t('E-mail address'),
-      '#value' => $values['email'],
-      '#required' => TRUE,
-    ),
-    'pass' => array(
-      '#type' => 'password',
-      '#title' => t('Acquia.com password'),
-      '#description' => t('Please enter your Acquia.com password here'),
-      '#size' => 32,
-      '#required' => TRUE,
-    ),
-    'continue' => array(
-      '#type' => 'submit',
-      '#value' => 'Next >',
-    ),
-    'forgot_pass' => array(
-      '#value' => '<br/>'. l(t('I forgot my password'), 'http://acquia.com/user/password', array('attributes' => array('target' => '_blank'))),
-    ),
-    // Special value elements.
-    'this_step' => array(
-      '#type' => 'value',
-      '#value' => 'pass_old',
-    ),
-    'step_next' => array(
-      '#type' => 'value',
-      '#value' => 'details_old',
-    ),
-    '#validate' => array('_acquia_agent_an_trial_pass_old_form_validate'),
-  );
-  return $form;
-}
-
-function _acquia_agent_an_trial_pass_old_form_validate($form, &$form_state) {
-  $val = $form_state['storage']['values'];
-  if (!empty($val['email'])) {
-    $params = array('email' => $val['email']);
-    $args = array('body' => $params, 'authenticator' => _acquia_agent_create_authenticator($params, $form_state['values']['pass']));
-    $result = xmlrpc(acquia_agent_network_address(), 'acquia.agent.provision.get_user_details', $args);
-    if ($errno = xmlrpc_errno()) {
-      acquia_agent_report_xmlrpc_error();
-      // Set form error to prevent switching to the next page.
-      form_set_error('email');
-    }
-    else {
-      $form_state['storage']['userdata'] = $result['body'];
-    }
-  }
-  else {
-    // Paranoid check. should not happen.
-    form_set_error('email', t('No email provided'));
-  }
 }
 
 /**
  * Main page function
  */
 function acquia_agent_settings_page($arg = NULL) {
+  $banner = '';
   $identifier = acquia_agent_settings('acquia_identifier');
   $key = acquia_agent_settings('acquia_key');
   $path = drupal_get_path('module', 'acquia_agent');
-  $banner = theme('image', $path .'/acquia_vertical_banner.png');
+  $dynamic_banner = variable_get('acquia_dynamic_banner', FALSE);
+  if ($dynamic_banner) {
+    drupal_add_js(array('acquia_network' => array('id' => $identifier ? $identifier : FALSE)), 'setting');
+    drupal_add_js(array('acquia_network' => array('url' => variable_get('acquia_banner_service', 'http://insightdev.network.acquia-sites.com/system/acquia-banner'))), 'setting');
+    $src = variable_get('acquia_banner_serve', 'http://insightdev.network.acquia-sites.com/sites/all/modules/custom/acquia_banner/acquia_banner.js');
+    $banner = "<script type='text/javascript' src='" . htmlentities($src) . "'></script>";
+  }
+  else {
+    $banner = theme('image', $path .'/acquia_vertical_banner.png');
+    $banner = '<a href="http://www.acquia.com/trial" target="_blank">'. $banner . '</a>';
+  }
   drupal_add_css($path .'/acquia_agent.css', 'module', 'all', FALSE);
 
   if (empty($identifier) && empty($key) && $arg == 'setup') {
@@ -495,7 +135,7 @@ function acquia_agent_settings_page($arg = NULL) {
   }
   else {
     drupal_set_title(t('Get a free 30 day trial of the Acquia Network'));
-    return drupal_get_form('acquia_agent_an_trial_form', $banner);
+    return drupal_get_form('acquia_agent_an_start_form', $banner);
   }
 }
 
@@ -705,31 +345,37 @@ function acquia_agent_settings_form($form_state, $banner) {
 
   $ssl_available = (in_array('ssl', stream_get_transports(), TRUE) && !defined('ACQUIA_DEVELOPMENT_NOSSL'));
 
-  $form['ssl'] = array(
+  $form['connection'] = array(
     '#type' => 'fieldset',
-    '#title' => t('SSL settings'),
+    '#title' => t('Connector settings'),
     '#collapsible' => FALSE,
   );
-  $form['ssl']['acquia_agent_verify_peer'] = array(
+  $form['connection']['acquia_dynamic_banner'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Receive updates'),
+    '#default_value' => variable_get('acquia_dynamic_banner', FALSE),
+    '#description' => t('Receive dynamic updates on this page from Acquia.com about your subscription and new features.'),
+  );
+  $form['connection']['acquia_agent_verify_peer'] = array(
     '#type' => 'radios',
     '#title' => t('Enhanced SSL security'),
     '#default_value' => (int) (variable_get('acquia_agent_verify_peer', 0) && $ssl_available),
     '#options' => array(0 => t('Disabled'), 1 => t('Enabled')),
-    '#description' => t('If enabled the Acquia Connector will attempty to verify Acquia server identities before sending data.  May cause communication to fail, however, depending on your local configuration.'),
+    '#description' => t('If enabled the Acquia Connector will attempt to verify Acquia server identities before sending data.  May cause communication to fail, however, depending on your local configuration.'),
     '#disabled' => !$ssl_available,
   );
-
   if ($ssl_available) {
-    $form['ssl']['acquia_agent_verify_peer']['#description'] .= ' <div class="ok">'. t('PHP has SSL support and may support this feature.') .'</div>';
-    $form['ssl']['buttons']['submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('Save configuration'),
-      '#submit' => array('acquia_agent_ssl_submit'),
-    );
+    $form['connection']['acquia_agent_verify_peer']['#description'] .= ' <div class="ok">'. t('PHP has SSL support and may support this feature.') .'</div>';
   }
   else {
-    $form['ssl']['acquia_agent_verify_peer']['#description'] .= ' <div class="error">'. t('Your installation of PHP does not have SSL support. Please enable the SSL extension or compile PHP with SSL, see: <a href="http://php.net/manual/en/book.openssl.php" target="_blank">http://php.net/manual/en/book.openssl.php</a>.') .'</div>';
+    $form['connection']['acquia_agent_verify_peer']['#description'] .= ' <div class="error">'. t('Your installation of PHP does not have SSL support. Please enable the SSL extension or compile PHP with SSL, see: <a href="http://php.net/manual/en/book.openssl.php" target="_blank">http://php.net/manual/en/book.openssl.php</a>.') .'</div>';
   }
+  $form['connection']['buttons']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+    '#submit' => array('acquia_agent_settings_submit'),
+  );
+
   $form['banner'] = array('#value' => $banner);
   $form['#theme'] = 'acquia_agent_banner_form';
   return $form;
@@ -738,8 +384,9 @@ function acquia_agent_settings_form($form_state, $banner) {
 /**
  * Submit acquia_agent_settings ssl setting.
  */
-function acquia_agent_ssl_submit($form, &$form_state) {
+function acquia_agent_settings_submit($form, &$form_state) {
   variable_set('acquia_agent_verify_peer', $form_state['values']['acquia_agent_verify_peer']);
+  variable_set('acquia_dynamic_banner', $form_state['values']['acquia_dynamic_banner']);
   drupal_set_message(t('The configuration options have been saved.'));
 }
 
@@ -803,7 +450,7 @@ function theme_acquia_agent_banner_form($form) {
   $output .= drupal_render($form);
   $output .= "\n</div>\n";
   $output .= '<div class="an-pg-banner" id="'. $form['#id'] .'-banner">';
-  $output .= '<a href="http://www.acquia.com/trial" target="_blank">'. $banner . '</a>';
+  $output .= $banner;
   $output .= "\n</div>\n</div>\n";
   return $output;
 }
