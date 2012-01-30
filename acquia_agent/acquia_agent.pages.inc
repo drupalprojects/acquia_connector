@@ -98,11 +98,16 @@ function _acquia_agent_call_provision_freetrial($body, $authenticator, $pass) {
  *  Main 30 day trial form function
  */
 function acquia_agent_an_start_form(&$form_state, $banner) {
+  $header = acquia_agent_an_info_header();
+
   $form = array(
-    '#prefix' =>  acquia_agent_an_info_header(),
-    'banner' => array('#value' => $banner),
-    '#theme' => 'acquia_agent_banner_form',
+    '#prefix' => '<div class="an-start-form">',
+    'header'  => array('#value' => $header),
+    'banner'  => array('#value' => $banner),
+    '#theme'  => 'acquia_agent_banner_form',
+    '#suffix' => '</div>',
   );
+
   return $form;
 }
 
@@ -122,10 +127,10 @@ function acquia_agent_settings_page($arg = NULL) {
     $banner = "<script type='text/javascript' src='" . htmlentities($src) . "'></script>";
   }
   else {
-    $banner = theme('image', $path .'/acquia_vertical_banner.png');
-    $banner = '<a href="http://www.acquia.com/trial" target="_blank">'. $banner . '</a>';
+    $banner = theme('image', $path . '/images/action.png');
+    $banner = '<a href="http://www.acquia.com/trial" target="_blank">' . $banner . '</a>';
   }
-  drupal_add_css($path .'/acquia_agent.css', 'module', 'all', FALSE);
+  drupal_add_css($path . '/css/acquia_agent.css', 'module', 'all', FALSE);
 
   if (empty($identifier) && empty($key) && $arg == 'setup') {
     return drupal_get_form('acquia_agent_automatic_setup_form');
@@ -456,266 +461,30 @@ function theme_acquia_agent_banner_form($form) {
 }
 
 function acquia_agent_an_info_header() {
+  $path = drupal_get_path('module', 'acquia_agent');
+
   $l_opt = array('attributes' => array('target' => '_blank'));
-  $output = '<h2 id="an-info-header">' . t('With the <a href="@acquia-network" target="_blank">Acquia Network</a> you get:', array('@acquia-network' => 'http://acquia.com/products-services/acquia-network')) . '</h2>';
+  $output  = '<div class="an-wrapper">';
+  $output .= '<h2 id="an-info-header">' . t('Acquia Network', array('@acquia-network' => 'http://acquia.com/products-services/acquia-network')) . '</h2>';
+  $output .= '<p class="an-slogan">' . t('A suite of products and services to create & maintain killer web experiences built on Drupal') . '</p>';
   $output .= '<div id="an-info-box">';
-  $output .=   '<div class="cell an-left">';
-  $output .=     '<h2>' . t('Knowledge Library') . '</h2>';
-  $output .=     t("Get access to the Acquia Library's articles, videos, and podcasts covering expert tips and tricks, help and how-tos.");
-  $output .=     '<br/>' . l(t('Learn more'), 'http://library.acquia.com/', $l_opt);
+  $output .=   '<div class="cell with-arrow an-left">';
+  $output .=     '<h2 class="cell-title"><i>' . t('Answers you need') . '</i></h2>';
+  $output .=     '<a href="http://library.acquia.com/" target="_blank">' . theme('image', $path . '/images/icon-library.png') . '</a>';
+  $output .=     '<p class="cell-p">' . t("Tap the collective knowledge of Acquia’s technical support team & partners.") . '</p>';
   $output .=   '</div>';
-  $output .=   '<div class="cell an-center">';
-  $output .=     '<h2>' . t('Tools and Services') . '</h2>';
-  $output .=     t('Sit back while Insight inspects your site for security, performance, SEO, and best practices. Leverage services for faceted search, automated load testing, spam blocking, A/B site testing, performance tuning, training videos, and more!');
-  $output .=     '<br/>' . l(t('Learn more'), 'http://www.acquia.com/products-services/acquia-network/cloud-services', $l_opt);
+  $output .=   '<div class="cell with-arrow an-center">';
+  $output .=     '<h2 class="cell-title"><i>' . t('Tools to extend your site') . '</i></h2>';
+  $output .=     '<a href="http://www.acquia.com/products-services/acquia-network/cloud-services" target="_blank">' . theme('image', $path . '/images/icon-tools.png') . '</a>';
+  $output .=     '<p class="cell-p">' . t('Enhance and extend your site with an array of <a href="@services" target="_blank">services</a> from Acquia & our partners.', array('@services' => 'http://www.acquia.com/products-services/acquia-network/cloud-services')) . '</p>';
   $output .=   '</div>';
   $output .=   '<div class="cell an-right">';
-  $output .=     '<h2>' . t('Expert Support') . '</h2>';
-  $output .=     t("Get advice for even the toughest Drupal questions from Acquia's Drupal experts.");
-  $output .=     '<br/>' . l(t('Learn more'), 'http://www.acquia.com/drupal-support', $l_opt);
+  $output .=     '<h2 class="cell-title"><i>' . t('Support when you want it') . '</i></h2>';
+  $output .=     '<a href="http://www.acquia.com/drupal-support" target="_blank">' . theme('image', $path . '/images/icon-support.png') . '</a>';
+  $output .=     '<p class="cell-p">' . t("Experienced Drupalists are available to support you whenever you need it.") . '</p>';
   $output .=   '</div>';
+  $output .=  '</div>';
   $output .= '</div>';
   return $output;
 }
-
-function acquia_agent_existing_account_msg() {
-  $output = '<div class="messages warning" style="margin-top: 0px">';
-  $output .= t('An existing Acquia.com account is associated with that email address. Enter your password to associate this free trial with that account, or <a href="@an_trial">try another email address</a>', array('@an_trial' => url('admin/settings/acquia-agent')));
-  $output .= '</div>';
-  return $output;
-}
-
-/**
- * List of countries in the Acquia Network database.
- */
-function _acquia_agent_countries() {
-  return array (
-    'United States' => 'United States',
-    'Afghanistan' => 'Afghanistan',
-    'Albania' => 'Albania',
-    'Algeria' => 'Algeria',
-    'American Samoa' => 'American Samoa',
-    'Andorra' => 'Andorra',
-    'Angola' => 'Angola',
-    'Anguilla' => 'Anguilla',
-    'Antigua and Barbuda' => 'Antigua and Barbuda',
-    'Argentina' => 'Argentina',
-    'Armenia' => 'Armenia',
-    'Ascension Island' => 'Ascension Island',
-    'Australia' => 'Australia',
-    'Austria' => 'Austria',
-    'Azerbaijan' => 'Azerbaijan',
-    'Bahamas' => 'Bahamas',
-    'Bahrain' => 'Bahrain',
-    'Bangladesh' => 'Bangladesh',
-    'Barbados' => 'Barbados',
-    'Belarus' => 'Belarus',
-    'Belgium' => 'Belgium',
-    'Belize' => 'Belize',
-    'Benin' => 'Benin',
-    'Bermuda' => 'Bermuda',
-    'Bhutan' => 'Bhutan',
-    'Bolivia' => 'Bolivia',
-    'Bosnia and Herzegovina' => 'Bosnia and Herzegovina',
-    'Botswana' => 'Botswana',
-    'Brazil' => 'Brazil',
-    'British Indian Ocean Territory' => 'British Indian Ocean Territory',
-    'Brunei Darussalam' => 'Brunei Darussalam',
-    'Bulgaria' => 'Bulgaria',
-    'Burkina Faso' => 'Burkina Faso',
-    'Burundi' => 'Burundi',
-    'Cambodia' => 'Cambodia',
-    'Cameroon' => 'Cameroon',
-    'Canada' => 'Canada',
-    'Cape Verde' => 'Cape Verde',
-    'Cayman Islands' => 'Cayman Islands',
-    'Central African Republic' => 'Central African Republic',
-    'Chad' => 'Chad',
-    'Chile' => 'Chile',
-    'China' => 'China',
-    'Colombia' => 'Colombia',
-    'Comoros' => 'Comoros',
-    'Congo' => 'Congo',
-    'Cook Islands' => 'Cook Islands',
-    'Costa Rica' => 'Costa Rica',
-    'Cote D Ivoire' => 'Cote D Ivoire',
-    'Croatia' => 'Croatia',
-    'Cuba' => 'Cuba',
-    'Cyprus' => 'Cyprus',
-    'Czech Republic' => 'Czech Republic',
-    'Denmark' => 'Denmark',
-    'Djibouti' => 'Djibouti',
-    'Dominica' => 'Dominica',
-    'Dominican Republic' => 'Dominican Republic',
-    'Ecuador' => 'Ecuador',
-    'Egypt' => 'Egypt',
-    'El Salvador' => 'El Salvador',
-    'Equatorial Guinea' => 'Equatorial Guinea',
-    'Eritrea' => 'Eritrea',
-    'Estonia' => 'Estonia',
-    'Ethiopia' => 'Ethiopia',
-    'Falkland Islands' => 'Falkland Islands',
-    'Faroe Islands' => 'Faroe Islands',
-    'Federated States of Micronesia' => 'Federated States of Micronesia',
-    'Fiji' => 'Fiji',
-    'Finland' => 'Finland',
-    'France' => 'France',
-    'French Guiana' => 'French Guiana',
-    'French Polynesia' => 'French Polynesia',
-    'Gabon' => 'Gabon',
-    'Georgia' => 'Georgia',
-    'Germany' => 'Germany',
-    'Ghana' => 'Ghana',
-    'Greece' => 'Greece',
-    'Greenland' => 'Greenland',
-    'Grenada' => 'Grenada',
-    'Guadeloupe' => 'Guadeloupe',
-    'Guatemala' => 'Guatemala',
-    'Guam' => 'Guam',
-    'Guinea' => 'Guinea',
-    'Guinea Bissau' => 'Guinea Bissau',
-    'Guyana' => 'Guyana',
-    'Haiti' => 'Haiti',
-    'Holy See (Vatican City)' => 'Holy See (Vatican City)',
-    'Honduras' => 'Honduras',
-    'Hong Kong' => 'Hong Kong',
-    'Hungary' => 'Hungary',
-    'Iceland' => 'Iceland',
-    'India' => 'India',
-    'Indonesia' => 'Indonesia',
-    'Iran' => 'Iran',
-    'Ireland' => 'Ireland',
-    'Isle of Man' => 'Isle of Man',
-    'Israel' => 'Israel',
-    'Italy' => 'Italy',
-    'Jamaica' => 'Jamaica',
-    'Japan' => 'Japan',
-    'Jordan' => 'Jordan',
-    'Kazakhstan' => 'Kazakhstan',
-    'Kenya' => 'Kenya',
-    'Kiribati' => 'Kiribati',
-    'Korea' => 'Korea',
-    'Kuwait' => 'Kuwait',
-    'Kyrgyzstan' => 'Kyrgyzstan',
-    'Laos' => 'Laos',
-    'Latvia' => 'Latvia',
-    'Lebanon' => 'Lebanon',
-    'Lesotho' => 'Lesotho',
-    'Liberia' => 'Liberia',
-    'Libya' => 'Libya',
-    'Liechtenstein' => 'Liechtenstein',
-    'Lithuania' => 'Lithuania',
-    'Luxembourg' => 'Luxembourg',
-    'Macau' => 'Macau',
-    'Macedonia' => 'Macedonia',
-    'Madagascar' => 'Madagascar',
-    'Malawi' => 'Malawi',
-    'Malaysia' => 'Malaysia',
-    'Maldives' => 'Maldives',
-    'Mali' => 'Mali',
-    'Malta' => 'Malta',
-    'Marshall Islands' => 'Marshall Islands',
-    'Martinique' => 'Martinique',
-    'Mauritius' => 'Mauritius',
-    'Mayotte' => 'Mayotte',
-    'Mexico' => 'Mexico',
-    'Moldova' => 'Moldova',
-    'Monaco' => 'Monaco',
-    'Mongolia' => 'Mongolia',
-    'Montenegro' => 'Montenegro',
-    'Montserrat' => 'Montserrat',
-    'Morocco' => 'Morocco',
-    'Mozambique' => 'Mozambique',
-    'Myanmar' => 'Myanmar',
-    'Namibia' => 'Namibia',
-    'Nauru' => 'Nauru',
-    'Nepal' => 'Nepal',
-    'Netherlands' => 'Netherlands',
-    'Netherlands Antilles' => 'Netherlands Antilles',
-    'New Caledonia' => 'New Caledonia',
-    'New Zealand' => 'New Zealand',
-    'Nicaragua' => 'Nicaragua',
-    'Niger' => 'Niger',
-    'Nigeria' => 'Nigeria',
-    'Niue' => 'Niue',
-    'Norfolk Island' => 'Norfolk Island',
-    'Northern Mariana Islands' => 'Northern Mariana Islands',
-    'Norway' => 'Norway',
-    'Oman' => 'Oman',
-    'Pakistan' => 'Pakistan',
-    'Palau' => 'Palau',
-    'Palestine' => 'Palestine',
-    'Panama' => 'Panama',
-    'Papua New Guinea' => 'Papua New Guinea',
-    'Paraguay' => 'Paraguay',
-    'Peru' => 'Peru',
-    'Philippines' => 'Philippines',
-    'Pitcairn' => 'Pitcairn',
-    'Poland' => 'Poland',
-    'Portugal' => 'Portugal',
-    'Puerto Rico' => 'Puerto Rico',
-    'Qatar' => 'Qatar',
-    'Reunion' => 'Reunion',
-    'Romania' => 'Romania',
-    'Russian Federation' => 'Russian Federation',
-    'Rwanda' => 'Rwanda',
-    'Saint Vincent and the Grenadines' => 'Saint Vincent and the Grenadines',
-    'San Marino' => 'San Marino',
-    'Sao Tome and Principe' => 'Sao Tome and Principe',
-    'Saudi Arabia' => 'Saudi Arabia',
-    'Senegal' => 'Senegal',
-    'Serbia' => 'Serbia',
-    'Seychelles' => 'Seychelles',
-    'Sierra Leone' => 'Sierra Leone',
-    'Singapore' => 'Singapore',
-    'Slovakia' => 'Slovakia',
-    'Slovenia' => 'Slovenia',
-    'Solomon Islands' => 'Solomon Islands',
-    'Somalia' => 'Somalia',
-    'South Africa' => 'South Africa',
-    'South Georgia' => 'South Georgia',
-    'Spain' => 'Spain',
-    'Sri Lanka' => 'Sri Lanka',
-    'St. Kitts and Nevis' => 'St. Kitts and Nevis',
-    'St. Lucia' => 'St. Lucia',
-    'St. Pierre and Miquelon' => 'St. Pierre and Miquelon',
-    'Sudan' => 'Sudan',
-    'Suriname' => 'Suriname',
-    'Swaziland' => 'Swaziland',
-    'Sweden' => 'Sweden',
-    'Switzerland' => 'Switzerland',
-    'Syrian Arab Republic' => 'Syrian Arab Republic',
-    'Taiwan' => 'Taiwan',
-    'Tajikistan' => 'Tajikistan',
-    'Tanzania' => 'Tanzania',
-    'Thailand' => 'Thailand',
-    'The Gambia' => 'The Gambia',
-    'Togo' => 'Togo',
-    'Tokelau' => 'Tokelau',
-    'Tonga' => 'Tonga',
-    'Trinidad and Tobago' => 'Trinidad and Tobago',
-    'Tunisia' => 'Tunisia',
-    'Turkey' => 'Turkey',
-    'Turkmenistan' => 'Turkmenistan',
-    'Turks and Caicos Islands' => 'Turks and Caicos Islands',
-    'Tuvalu' => 'Tuvalu',
-    'Uganda' => 'Uganda',
-    'Ukraine' => 'Ukraine',
-    'United Arab Emirates' => 'United Arab Emirates',
-    'United Kingdom' => 'United Kingdom',
-    'Uruguay' => 'Uruguay',
-    'Uzbekistan' => 'Uzbekistan',
-    'Vanuatu' => 'Vanuatu',
-    'Venezuela' => 'Venezuela',
-    'Viet Nam' => 'Viet Nam',
-    'Virgin Islands' => 'Virgin Islands',
-    'Western Samoa' => 'Western Samoa',
-    'Yemen' => 'Yemen',
-    'Yugoslavia' => 'Yugoslavia',
-    'Zaire' => 'Zaire',
-    'Zambia' => 'Zambia',
-    'Zimbabwe' => 'Zimbabwe',
-  );
-};
-
 
