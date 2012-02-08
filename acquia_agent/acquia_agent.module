@@ -338,7 +338,6 @@ function acquia_agent_menu_icon() {
   return '<img class="admin-menu-icon" src="'. base_path() . drupal_get_path('module', 'acquia_agent') . '/acquia.ico" height = "16" alt="" />';
 }
 
-
 /**
  * @} End of "acquia_admin_menu".
  */

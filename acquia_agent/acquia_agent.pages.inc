@@ -122,8 +122,8 @@ function acquia_agent_settings_page($arg = NULL) {
   $dynamic_banner = variable_get('acquia_dynamic_banner', FALSE);
   if ($dynamic_banner) {
     drupal_add_js(array('acquia_network' => array('id' => $identifier ? $identifier : FALSE)), 'setting');
-    drupal_add_js(array('acquia_network' => array('url' => variable_get('acquia_banner_service', 'http://insightdev.network.acquia-sites.com/system/acquia-banner'))), 'setting');
-    $src = variable_get('acquia_banner_serve', 'http://insightdev.network.acquia-sites.com/sites/all/modules/custom/acquia_banner/acquia_banner.js');
+    drupal_add_js(array('acquia_network' => array('url' => variable_get('acquia_banner_service', 'https://insight.acquia.com/system/acquia-banner'))), 'setting');
+    $src = variable_get('acquia_banner_serve', 'http://www.acquia.com/acquia_banner.js');
     $banner = "<script type='text/javascript' src='" . htmlentities($src) . "'></script>";
   }
   else {
@@ -366,7 +366,7 @@ function acquia_agent_settings_form($form_state, $banner) {
     '#title' => t('Enhanced SSL security'),
     '#default_value' => (int) (variable_get('acquia_agent_verify_peer', 0) && $ssl_available),
     '#options' => array(0 => t('Disabled'), 1 => t('Enabled')),
-    '#description' => t('If enabled the Acquia Connector will attempt to verify Acquia server identities before sending data.  May cause communication to fail, however, depending on your local configuration.'),
+    '#description' => t('If enabled the Acquia Connector will attempt to verify Acquia server identities before sending data. May cause communication to fail, however, depending on your local configuration.'),
     '#disabled' => !$ssl_available,
   );
   if ($ssl_available) {
@@ -380,6 +380,18 @@ function acquia_agent_settings_form($form_state, $banner) {
     '#value' => t('Save configuration'),
     '#submit' => array('acquia_agent_settings_submit'),
   );
+  if (!empty($identifier) && !empty($key)) {
+    $form['migrate'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Migrate'),
+      '#collapsible' => FALSE,
+    );
+    $form['migrate']['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Migrate'),
+      '#submit' => array('acquia_agent_migrate_submit'),
+    );
+  }
 
   $form['banner'] = array('#value' => $banner);
   $form['#theme'] = 'acquia_agent_banner_form';
@@ -395,6 +407,31 @@ function acquia_agent_settings_submit($form, &$form_state) {
   drupal_set_message(t('The configuration options have been saved.'));
 }
 
+/**
+ * Submit handler for Acquia Cloud migrate button.
+ */
+function acquia_agent_migrate_submit($form, &$form_state) {
+  module_load_include('inc', 'acquia_agent', 'acquia_agent.migrate');
+  // Prepare for migration
+  $migration = acquia_migration_prepare();
+  if (isset($migration['error']) && $migration['error'] == TRUE) {
+    // @todo
+    drupal_set_message('error');
+  }
+  else {
+    $batch = array(
+      'title' => t('Acquia Cloud Migration'),
+      'operations' => array(
+        array('acquia_migrate_batch_db', array($migration)),
+        array('acquia_migrate_batch_tar', array($migration)),
+        array('acquia_migrate_batch_transmit', array($migration)),
+      ),
+      'finished' => 'acquia_migrate_batch_finished',
+      'file' => drupal_get_path('module', 'acquia_agent') . '/acquia_agent.migrate.inc',
+    );
+    batch_set($batch);
+  }
+}
 
 /**
  * Validate acquia_agent_settings form submissions.
