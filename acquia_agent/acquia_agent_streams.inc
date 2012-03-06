@@ -71,7 +71,8 @@ function _acquia_agent_xmlrpc() {
 function acquia_agent_stream_context_create($url, $module = 'acquia_agent') {
   $opts = array();
   $uri = parse_url($url);
-  if (isset($uri['scheme']) && ($uri['scheme'] == 'https') && variable_get('acquia_agent_verify_peer', 0)) {
+  $ssl_available = in_array('ssl', stream_get_transports(), TRUE) && !defined('ACQUIA_DEVELOPMENT_NOSSL') && variable_get('acquia_agent_verify_peer', 1);
+  if (isset($uri['scheme']) && ($uri['scheme'] == 'https') && $ssl_available) {
     // Look for a local certificate to validate the server identity.
     $pem_file = drupal_get_path('module', $module) .'/'. $uri['host'] . '.pem';
     if (file_exists($pem_file)) {
