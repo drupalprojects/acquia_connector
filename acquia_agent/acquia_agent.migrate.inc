@@ -465,19 +465,21 @@ function _acquia_migrate_cleanup(&$migration) {
     unlink($migration['tar_file']);
     unset($migration['tar_file']);
   }
-  if (isset($migration['dir']) && is_dir($migration['dir'])) {
-    if (!@rmdir($migration['dir'])) {
-      // Files leftover in directory, reconstruct names and remove.
-      $db_file = $migration['file'] . '.sql';
-      if (file_exists($db_file)) {
-        unlink($db_file);
+  if (isset($migration['dir'])) {
+    if (is_dir($migration['dir'])) {
+      if (!@rmdir($migration['dir'])) {
+        // Files leftover in directory, reconstruct names and remove.
+        $db_file = $migration['file'] . '.sql';
+        if (file_exists($db_file)) {
+          unlink($db_file);
+        }
+        $tar_file = $migration['file'] . '.tar';
+        $tar_file .= !empty($migration['compression_ext']) ? '.' . $migration['compression_ext'] : '';
+        if (file_exists($tar_file)) {
+          unlink($tar_file);
+        }
+        rmdir($migration['dir']);
       }
-      $tar_file = $migration['file'] . '.tar';
-      $tar_file .= !empty($migration['compression_ext']) ? '.' . $migration['compression_ext'] : '';
-      if (file_exists($tar_file)) {
-        unlink($tar_file);
-      }
-      rmdir($migration['dir']);
     }
     unset($migration['dir']);
   }
@@ -507,11 +509,6 @@ function _acquia_migrate_backup_db_to_file_mysql(&$migration) {
     fwrite($handle, $data);
     $alltables = _acquia_migrate_get_tables_mysql();
     foreach ($alltables as $table) {
-      // @todo timeout handling
-      /*if (_acquia_migrate_check_timeout()) {
-        $migration['error'] = TRUE;
-        return;
-      }*/
       if ($table->Name && !isset($exclude[$table->Name])) {
         $data = _acquia_migrate_get_table_structure_sql_mysql($table);
         fwrite($handle, $data);
