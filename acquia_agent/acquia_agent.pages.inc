@@ -90,7 +90,6 @@ function acquia_agent_migrate_page() {
 function acquia_agent_migrate_form(&$form_state) {
   $identifier = acquia_agent_settings('acquia_identifier');
   $key = acquia_agent_settings('acquia_key');
-  watchdog('acquia-cloud', 'migration.environments @server', array('@server' => variable_get('acquia_spi_server', 'https://nspi.acquia.com')), WATCHDOG_DEBUG);
   $data = acquia_agent_call('acquia.agent.cloud.migration.environments', array('identifier' => $identifier), $identifier, $key, variable_get('acquia_spi_server', 'https://nspi.acquia.com'));
 
   $error = NULL;
@@ -298,7 +297,6 @@ function acquia_agent_automatic_setup_form_validate($form, &$form_state) {
     $data = array('body' => $body, 'authenticator' => $authenticator);
     // Does not use acquia_agent_call() because Network identifier and key are not available.
     $server = variable_get('acquia_spi_server', 'https://nspi.acquia.com');
-    watchdog('acquia-cloud', 'communication.settings: @server : @data', array('@data' => var_export($data, TRUE), '@server' => $server), WATCHDOG_DEBUG);
     $result = xmlrpc(acquia_agent_network_address($server), 'acquia.agent.communication.settings', $data);
 
     if ($errno = xmlrpc_errno() !== NULL) {
@@ -355,7 +353,6 @@ function _acquia_agent_automatic_start_submit(&$form_state) {
   $data = array('body' => $body, 'authenticator' => $authenticator);
   // Does not use acquia_agent_call() because Network identifier and key are not available.
   $server = variable_get('acquia_spi_server', 'https://nspi.acquia.com');
-  watchdog('acquia-cloud', 'subscription.credentials: @server : @data', array('@data' => var_export($data, TRUE), '@server' => $server), WATCHDOG_DEBUG);
   $result = xmlrpc(acquia_agent_network_address($server), 'acquia.agent.subscription.credentials', $data);
 
   if ($errno = xmlrpc_errno()) {
@@ -615,7 +612,7 @@ function acquia_agent_migrate_cancel_submit($form, &$form_state) {
 function acquia_agent_migrate_form_submit($form, &$form_state) {
   module_load_include('inc', 'acquia_agent', 'acquia_agent.migrate');
 
-  if (empty($form_state['values']['environment']) || empty($form_state['values']['envs'])) {
+  if (empty($form_state['values']['envs'])) { // Sanity check.
     return;
   }
 
@@ -623,14 +620,16 @@ function acquia_agent_migrate_form_submit($form, &$form_state) {
   if (count($form_state['values']['envs']) > 1) {
     // Use selected environment.
     $env = $form_state['values']['envs'][$form_state['values']['environment']];
+    $site_name = $form_state['values']['environment'];
   }
   else {
     $env = array_pop($form_state['values']['envs']);
+    $site_name = $env;
   }
 
   // Prepare for migration.
   $migration = acquia_migrate_prepare($env);
-  $migration['site_name'] = $form_state['values']['environment'];
+  $migration['site_name'] = $site_name;
 
   if (isset($migration['error']) && $migration['error'] !== FALSE) {
     drupal_set_message(t('Unable to begin migration. @error', array('@error' => $migration['error'])), 'error');

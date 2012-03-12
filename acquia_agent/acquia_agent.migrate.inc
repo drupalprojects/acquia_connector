@@ -246,7 +246,6 @@ function acquia_migrate_batch_finished($success, $results, $operations) {
     // Inform Acquia Cloud of migration completion.
     _acquia_migrate_complete($migration);
     if ($migration['error'] != FALSE) {
-      watchdog('acquia-cloud', 'completion error @migration', array('@migration' => var_export($migration, TRUE)), WATCHDOG_DEBUG);
       $message = t('There was an error checking for completed migration. !err<br/>See the !network for more information.', array('!err' => $migration['error'], '!network' => l('Network dashboard', 'https://network.acquia.com/')));
       drupal_set_message($message);
     }
@@ -260,7 +259,7 @@ function acquia_migrate_batch_finished($success, $results, $operations) {
     _acquia_migrate_cleanup($migration);
   }
   else {
-    watchdog('acquia-cloud', 'finished error @migration', array('@migration' => var_export($migration, TRUE)), WATCHDOG_DEBUG);
+    watchdog('acquia-migrate', 'Migration error @m', array('@m' => print_r($migration, TRUE)), WATCHDOG_ERROR);
     $message = t('There was an error during migration.');
     if ($migration && is_string($migration['error'])) {
       $message .= ' ' . $migration['error'];
@@ -355,28 +354,35 @@ function _acquia_migrate_transmit(&$migration, $content) {
   if ($return->code == 200) {
     $output = json_decode($return->data, TRUE);
 
-    // Validate signature.
-    $response_signature = $output['sig'];
-    unset($output['sig']);
-    $sig = '';
-    foreach ($output as $value) {
-      $sig .= $value;
-    }
-    $signature = hash_hmac('sha256', $sig, $migration['env']['secret']);
-
-    // Check if response is correct, if not stop migration.
-    if ($signature != $response_signature) {
-      $migration['error'] = t('Signature from server is wrong');
+    if (!empty($output['err'])) {
+      $migration['error'] = $output['err'];
       return FALSE;
+    }
+    else {
+      // Validate signature.
+      $response_signature = $output['sig'];
+      unset($output['sig']);
+      $sig = '';
+      foreach ($output as $value) {
+        $sig .= $value;
+      }
+      $signature = hash_hmac('sha256', $sig, $migration['env']['secret']);
+
+      // Check if response is correct, if not stop migration.
+      if ($signature != $response_signature) {
+        $migration['error'] = t('Signature from server is wrong');
+        return FALSE;
+      }
     }
   }
   elseif ($return->code == 302) {
-    // Final chunk!
+    // Final chunk, signature and any error is in Location URL.
     $redirect_url = $return->redirect_url;
     $parsed = parse_url($redirect_url);
     parse_str($parsed['query'], $query);
     if (!empty($query['err'])) {
       $migration['error'] = $query['err'];
+      return FALSE;
     }
     else {
       $query_sig = $query['sig'];
