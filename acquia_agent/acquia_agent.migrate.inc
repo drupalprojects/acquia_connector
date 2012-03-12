@@ -247,11 +247,11 @@ function acquia_migrate_batch_finished($success, $results, $operations) {
     _acquia_migrate_complete($migration);
     if ($migration['error'] != FALSE) {
       watchdog('acquia-cloud', 'completion error @migration', array('@migration' => var_export($migration, TRUE)), WATCHDOG_DEBUG);
-      $message = t('There was an error checking upload completion. !err<br/>See the !network for more information.', array('!err' => $migration['error'], '!network' => l('Network dashboard', 'https://network.acquia.com/')));
+      $message = t('There was an error checking for completed migration. !err<br/>See the !network for more information.', array('!err' => $migration['error'], '!network' => l('Network dashboard', 'https://network.acquia.com/')));
       drupal_set_message($message);
     }
     else {
-      $message = t('Upload success. You can see import progress on the !network.', array(
+      $message = t('Migrate success. You can see import progress on the !network.', array(
         '!network' => l(t('Acquia Network'), $migration['network_url'], array('external' => TRUE)),
       ));
       drupal_set_message($message);
@@ -261,7 +261,7 @@ function acquia_migrate_batch_finished($success, $results, $operations) {
   }
   else {
     watchdog('acquia-cloud', 'finished error @migration', array('@migration' => var_export($migration, TRUE)), WATCHDOG_DEBUG);
-    $message = t('There was an error during upload.');
+    $message = t('There was an error during migration.');
     if ($migration && is_string($migration['error'])) {
       $message .= ' ' . $migration['error'];
     }
