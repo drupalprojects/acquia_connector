@@ -461,6 +461,9 @@ function acquia_agent_settings_credentials_submit($form, &$form_state) {
   variable_set('acquia_key', $form_state['values']['acquia_key']);
   variable_set('acquia_identifier', $form_state['values']['acquia_identifier']);
   variable_set('acquia_subscription_name', $form_state['storage']['sub']['site_name']);
+  // Check subscription and send a heartbeat to Acquia Network via XML-RPC.
+  // Our status gets updated locally via the return data.
+  $active = acquia_agent_check_subscription();
   cache_clear_all();
   drupal_set_message(t('<h3>Connection successful!</h3>You are now connected to the Acquia Network.'));
   // Redirect to the path without the suffix.
