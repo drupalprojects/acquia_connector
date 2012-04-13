@@ -626,15 +626,25 @@ function acquai_spi_get_404s() {
  *
  */
 function acquia_spi_get_variables_data() {
-  $variables = array();
-  $results = db_query('SELECT name, value FROM {variable} ORDER BY name');
-//TODO create an exclusion list (or maybe an inclusion list) (or store it on a server and have nspi request it)
+  $data = array();
+  $variables = array('googleanalytics_cache', 'error_level', 'preprocess_js', 'page_cache_maximum_age', 'block_cache', 'preprocess_css', 'page_compression', 'cache', 'cache_lifetime', 'cron_last', 'clean_url', 'redirect_global_clean', 'theme_zen_settings', 'site_offline', 'site_name', 'user_register', 'user_signatures', 'filter_default_format', 'filter_html_1', 'filter_html_2', 'poormanscron_interval', 'dblog_row_limit', 'install_profile', 'user_email_verification');
+  // Add comment settings for node types.
+  $types = node_get_types();
+  if (!empty($types)) {
+    foreach ($types as $name => $type) {
+      $variables[] = 'comment_' . $name;
+    }
+  }
+
+  $results = db_query('SELECT name, value FROM {variable} WHERE name in (' . db_placeholders($variables, 'text') . ') ORDER BY name', $variables);
   while ($result = db_fetch_array($results)) {
-    $variables[$result['name']] = unserialize($result['value']);
+    if ($result && isset($result['value'])) {
+      $data[$result['name']] = unserialize($result['value']);
+    }
   }
   // Collapse to JSON string to simplify transport. NSPI server will not
   // re-encode for storage.
-  return _acquia_spi_json($variables);
+  return _acquia_spi_json($data);
 }
 
 /**
