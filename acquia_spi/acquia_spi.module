@@ -972,13 +972,6 @@ function acquia_spi_get_quantum() {
   // Get only active comments. NOTE: in case of comments, 0 is the active comment!
   $quantum['comments'] = db_result(db_query("SELECT COUNT(cid) FROM {comments} WHERE status = 0"));
 
-  // Get some data about caches
-  $cache = db_query("SELECT cid, created, expire FROM {cache} WHERE 1");
-  while ($row = db_fetch_array($cache)) {
-    $cdata[] = $row;
-  }
-  $quantum['cache'] = $cdata;
-
   return $quantum;
 }
 
