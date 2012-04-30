@@ -54,6 +54,7 @@ function acquia_spi_menu() {
     'description' => 'Send SPI data to Acquia Network.',
     'page callback' => '_acquia_spi_send',
     'access callback' => '_acquia_spi_send_access',
+    'type' => MENU_CALLBACK,
   );
 
   return $items;
@@ -329,7 +330,7 @@ function acquia_spi_get() {
   }
   if (!empty($additional_data)) {
     // JSON encode this additional data.
-    $spi['additional_data'] = drupal_json_encode($additional_data);
+    $spi['additional_data'] = _acquia_spi_json($additional_data);
   }
 
   if (!$via_ssl) {
