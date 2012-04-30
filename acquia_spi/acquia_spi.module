@@ -17,7 +17,7 @@ function acquia_spi_help($path, $arg) {
       .'quickly get your site up and running.  Also there are instructions for '
       .'setting the site theme as well as many other configuration tasks.';
       $link = l('Acquia Drupal welcome page', 'node/' . $nid);
-      return '<p>'. t($txt, array('!acquia_welcome' => $link)). '<p>';
+      return '<p>' . t($txt, array('!acquia_welcome' => $link)) . '<p>';
     }
   }
 }
@@ -289,12 +289,12 @@ function acquia_spi_get() {
     'platform'       => acquia_spi_get_platform(),
     'quantum'        => acquia_spi_get_quantum(),
     'system_status'  => acquia_spi_get_system_status(),
-    'failed_logins'  => variable_get('acquia_spi_send_watchdog',1) ? acquia_spi_get_failed_logins() : array(),
-    '404s'           => variable_get('acquia_spi_send_watchdog',1) ? acquai_spi_get_404s() : array(),
+    'failed_logins'  => variable_get('acquia_spi_send_watchdog', 1) ? acquia_spi_get_failed_logins() : array(),
+    '404s'           => variable_get('acquia_spi_send_watchdog', 1) ? acquai_spi_get_404s() : array(),
     'watchdog_size'  => acquai_spi_get_watchdog_size(),
-    'watchdog_data'  => variable_get('acquia_spi_send_watchdog',1) ? acquia_spi_get_watchdog_data() : array(),
-    'last_nodes'     => variable_get('acquia_spi_send_node_user',1) ? acquai_spi_get_last_nodes() : array(),
-    'last_users'     => variable_get('acquia_spi_send_node_user',1) ? acquai_spi_get_last_users() : array(),
+    'watchdog_data'  => variable_get('acquia_spi_send_watchdog', 1) ? acquia_spi_get_watchdog_data() : array(),
+    'last_nodes'     => variable_get('acquia_spi_send_node_user', 1) ? acquai_spi_get_last_nodes() : array(),
+    'last_users'     => variable_get('acquia_spi_send_node_user', 1) ? acquai_spi_get_last_users() : array(),
     'extra_files'    => acquia_spi_check_files_present(),
     'ssl_login'      => acquia_spi_check_login(),
     'file_hashes'    => $hashes,
@@ -329,11 +329,11 @@ function acquia_spi_get() {
     $spi_ssl = array(
       'system_vars'  => acquia_spi_get_variables_data(),
       'settings_ra'  => acquia_spi_get_settings_permissions(),
-      'admin_count'  => variable_get('acquia_spi_admin_priv',1) ? acquia_spi_get_admin_count() : '',
-      'admin_name'   => variable_get('acquia_spi_admin_priv',1) ? acquia_spi_get_super_name() : '',
+      'admin_count'  => variable_get('acquia_spi_admin_priv', 1) ? acquia_spi_get_admin_count() : '',
+      'admin_name'   => variable_get('acquia_spi_admin_priv', 1) ? acquia_spi_get_super_name() : '',
     );
 
-    return array_merge($spi,$spi_ssl);
+    return array_merge($spi, $spi_ssl);
   }
 }
 
@@ -612,8 +612,8 @@ function acquia_spi_get_watchdog_data() {
   if (module_exists('dblog')) {
     $sql = "SELECT wid, severity, type, message, timestamp FROM {watchdog} WHERE severity IN (0,2) AND timestamp > UNIX_TIMESTAMP() - 3600";
     $res = db_query($sql);
-    
-    while($row = db_fetch_array($res)) {
+
+    while ($row = db_fetch_array($res)) {
       $wd[$row['severity']] = $row;
     }
   }
@@ -701,7 +701,7 @@ function acquia_spi_get_failed_logins() {
   $cron_interval = variable_get('acquia_spi_cron_interval', 8*60*60);
   if (module_exists('dblog')) {
     $query = 'SELECT message, variables, timestamp FROM {watchdog} WHERE message LIKE "login attempt failed%" AND now()-timestamp > %s ORDER BY timestamp DESC';
-    $results = db_query($query,$cron_interval);
+    $results = db_query($query, $cron_interval);
 
     while ($result = db_fetch_array($results)) {
       $variables = unserialize($result['variables']);
@@ -717,8 +717,8 @@ function acquia_spi_get_failed_logins() {
  * @return boolean
  */
 function acquia_spi_get_super_name() {
-  $sql = "SELECT name from {users} WHERE uid = 1 AND (name LIKE '%admin%' OR name LIKE '%root%') LIMIT 1";
-  $result = db_result(db_query($sql));
+  $sql = "SELECT name from {users} WHERE uid = 1 AND (name LIKE '%admin%' OR name LIKE '%root%')";
+  $result = db_result(db_query_range($sql, 0, 1));
   if ($result) {
     return TRUE;
   }
@@ -768,10 +768,11 @@ function acquia_spi_get_platform() {
   // version being after the slash.
   preg_match('!^([^/]+)(/.+)?$!', $server['SERVER_SOFTWARE'], $webserver);
 
-  if (stristr($webserver[1],'Apache') && function_exists('apache_get_version')) {
+  if (stristr($webserver[1], 'Apache') && function_exists('apache_get_version')) {
     $webserver[2] = apache_get_version();
     $apache_modules = apache_get_modules();
-  } else {
+  }
+  else {
     $apache_modules = '';
   }
 
@@ -908,11 +909,12 @@ function acquia_spi_get_system_status() {
 function acquia_spi_get_modules() {
   
   // Only do a full rebuild of the module cache every 1 at the most
-  $last_build = variable_get('acquia_spi_module_rebuild',0);
+  $last_build = variable_get('acquia_spi_module_rebuild', 0);
   if ($last_build < time() - 86400) {
     $modules = module_rebuild_cache();
-    variable_set('acquia_spi_module_rebuild',time());
-  } else {
+    variable_set('acquia_spi_module_rebuild', time());
+  }
+  else {
     $result = db_query("SELECT filename, name, type, status, throttle, schema_version, info FROM {system} WHERE type = 'module'");
     while ($file = db_fetch_object($result)) {
       $file->info = unserialize($file->info);
@@ -931,13 +933,13 @@ function acquia_spi_get_modules() {
     $info['filename'] = $file->filename;
 
     // Determine which files belong to this module and hash them
-    $module_path = explode('/',$file->filename);
+    $module_path = explode('/', $file->filename);
     array_pop($module_path);
 
     // We really only care about this module if it is in 'sites' folder.
     // Otherwise it is covered by the hash of the distro's modules
-    if ($module_path[0]=='sites') {
-      $contrib_path = implode('/',$module_path);
+    if ($module_path[0] == 'sites') {
+      $contrib_path = implode('/', $module_path);
       
       // Get a hash for this module's files. If we nest into another module, we'll return
       // and that other module will be covered by it's entry in the system table.
@@ -945,8 +947,9 @@ function acquia_spi_get_modules() {
       // !! At present we aren't going to do a per module hash, but rather a per-project hash. The reason being that it is
       // too hard to tell an individual module appart from a project
       //$info['module_data'] = _acquia_spi_generate_hashes($contrib_path,array(),array(),TRUE,$contrib_path);
-      list($info['module_data']['hashes'],$info['module_data']['fileinfo']) = _acquia_spi_generate_hashes($contrib_path);
-    } else {
+      list($info['module_data']['hashes'], $info['module_data']['fileinfo']) = _acquia_spi_generate_hashes($contrib_path);
+    }
+    else {
       $info['module_data']['hashes'] = array();
       $info['module_data']['fileinfo'] = array();
     }
@@ -1067,24 +1070,24 @@ function _acquia_spi_generate_hashes($dir, $exclude_dirs = array(), $limit_dirs 
  */
 function acquia_spi_is_manifest_type($path) {
   $extensions = array(
-    'php'=> 1,
+    'php' => 1,
     'php4' => 1,
     'php5' => 1,
-    'module'=> 1,
-    'inc'=> 1,
-    'install'=> 1,
-    'test'=> 1,
-    'theme'=> 1,
-    'engine'=> 1,
-    'profile'=> 1,
-    'css'=> 1,
-    'js'=> 1,
-    'info'=> 1,
-    'sh'=> 1,
+    'module' => 1,
+    'inc' => 1,
+    'install' => 1,
+    'test' => 1,
+    'theme' => 1,
+    'engine' => 1,
+    'profile' => 1,
+    'css' => 1,
+    'js' => 1,
+    'info' => 1,
+    'sh' => 1,
     // SSL certificates
     'pem' => 1,
-    'pl'=> 1,
-    'pm'=> 1,
+    'pl' => 1,
+    'pm' => 1,
   );
   $pathinfo = pathinfo($path);
   return isset($pathinfo['extension']) && isset($extensions[$pathinfo['extension']]);
@@ -1108,7 +1111,7 @@ function acquia_spi_hash_path($path = '') {
       // Replace all line endings and CVS/svn Id tags
       $string = preg_replace('/\$Id[^;<>{}\(\)\$]*\$/', 'x$'.'Id$', $string);
       $string = preg_replace('/\r\n|\n|\r/', ' ', $string);
-      $hash =  base64_encode(pack("H*",sha1($string)));
+      $hash =  base64_encode(pack("H*", sha1($string)));
     }
   }
   return $hash;
