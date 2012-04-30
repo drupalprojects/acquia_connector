@@ -335,7 +335,9 @@ function acquia_agent_automatic_setup_form_submit($form, &$form_state) {
     // Our status gets updated locally via the return data.
     $active = acquia_agent_check_subscription();
     cache_clear_all();
-    drupal_set_message(t('<h3>Connection successful!</h3>You are now connected to the Acquia Network.'));
+    if ($active && count($active) > 1) {
+      drupal_set_message(t('<h3>Connection successful!</h3>You are now connected to the Acquia Network.'));
+    }
     // Redirect to the path without the suffix.
     drupal_goto('admin/settings/acquia-agent');
   }
@@ -465,7 +467,9 @@ function acquia_agent_settings_credentials_submit($form, &$form_state) {
   // Our status gets updated locally via the return data.
   $active = acquia_agent_check_subscription();
   cache_clear_all();
-  drupal_set_message(t('<h3>Connection successful!</h3>You are now connected to the Acquia Network.'));
+  if ($active && count($active) > 1) {
+    drupal_set_message(t('<h3>Connection successful!</h3>You are now connected to the Acquia Network.'));
+  }
   // Redirect to the path without the suffix.
   drupal_goto('admin/settings/acquia-agent');
 }
