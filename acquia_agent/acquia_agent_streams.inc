@@ -264,12 +264,6 @@ function acquia_agent_http_request($context, $url, $headers = array(), $method =
       $result->error = $text;
   }
 
-  // DEBUG REMOVE ME!
-  //print '<pre>';
-  //print 'DATA: <br>';
-  //print_r($result);
-  // DEBUG REMOVE ME!
-
   $result->code = $code;
   return $result;
 }
