@@ -669,7 +669,7 @@ function acquai_spi_get_404s() {
  */
 function acquia_spi_get_variables_data() {
   $data = array();
-  $variables = array('googleanalytics_cache', 'error_level', 'preprocess_js', 'page_cache_maximum_age', 'block_cache', 'preprocess_css', 'page_compression', 'cache', 'cache_lifetime', 'cron_last', 'clean_url', 'redirect_global_clean', 'theme_zen_settings', 'site_offline', 'site_name', 'user_register', 'user_signatures', 'filter_default_format', 'filter_html_1', 'filter_html_2', 'poormanscron_interval', 'dblog_row_limit', 'install_profile', 'user_email_verification');
+  $variables = array('acquia_spi_send_node_user', 'acquia_spi_admin_priv', 'acquia_spi_module_diff_data', 'acquia_spi_send_watchdog', 'acquia_spi_use_cron', 'googleanalytics_cache', 'error_level', 'preprocess_js', 'page_cache_maximum_age', 'block_cache', 'preprocess_css', 'page_compression', 'cache', 'cache_lifetime', 'cron_last', 'clean_url', 'redirect_global_clean', 'theme_zen_settings', 'site_offline', 'site_name', 'user_register', 'user_signatures', 'filter_default_format', 'filter_html_1', 'filter_html_2', 'poormanscron_interval', 'dblog_row_limit', 'install_profile', 'user_email_verification');
   // Add comment settings for node types.
   $types = node_get_types();
   if (!empty($types)) {
