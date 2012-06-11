@@ -684,6 +684,11 @@ function acquia_spi_get_variables_data() {
       $data[$result['name']] = unserialize($result['value']);
     }
   }
+  if (module_exists('globalredirect') && function_exists('_globalredirect_get_settings')) {
+    // Explicitly get Global Redirect settings since it deletes its variable
+    // if the settings match the defaults.
+    $data['globalredirect_settings'] = _globalredirect_get_settings();
+  }
   // Collapse to JSON string to simplify transport. NSPI server will not
   // re-encode for storage.
   return _acquia_spi_json($data);
