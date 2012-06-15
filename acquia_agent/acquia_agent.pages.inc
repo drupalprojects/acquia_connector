@@ -568,7 +568,7 @@ function acquia_agent_settings_form($form_state, $banner) {
   $form['migrate'] = array(
     '#type' => 'fieldset',
     '#title' => t('Acquia Cloud Migrate'),
-    '#description' => t('Migrate your site to Acquia Cloud hosting service.'),
+    '#description' => t('Transfer a fully-functional copy of your site to Acquia Cloud. <a href="!url">Read more</a>', array('!url' => url('https://docs.acquia.com/cloud/site/import/connector'))),
     '#collapsible' => TRUE,
     '#collapsed' => $collapsed,
   );
