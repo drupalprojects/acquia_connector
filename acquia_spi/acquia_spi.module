@@ -723,7 +723,7 @@ function acquia_spi_get_failed_logins() {
 
     while ($result = db_fetch_array($results)) {
       $variables = unserialize($result['variables']);
-      $last_logins['failed'][$result['timestamp']] = $variables['%user'];
+      $last_logins['failed'][$result['timestamp']] = check_plain($variables['%user']);
     }
   }
   return $last_logins;
