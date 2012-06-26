@@ -259,7 +259,7 @@ function acquia_migrate_batch_finished($success, $results, $operations) {
     _acquia_migrate_cleanup($migration);
   }
   else {
-    watchdog('acquia-migrate', 'Migration error @m', array('@m' => print_r($migration, TRUE)), WATCHDOG_ERROR);
+    watchdog('acquia-migrate', 'Migration error @m', array('@m' => var_export($migration, TRUE)), WATCHDOG_ERROR);
     $message = t('There was an error during migration.');
     if ($migration && is_string($migration['error'])) {
       $message .= ' ' . $migration['error'];
@@ -354,8 +354,14 @@ function _acquia_migrate_transmit(&$migration, $content) {
   if ($return->code == 200) {
     $output = json_decode($return->data, TRUE);
 
-    if (!empty($output['err'])) {
+    if (!is_array($output)) {
+      $migration['error'] = t('Error occurred, please try again or consult the logs.');
+      $migration['error_data'] = $return->data;
+      return FALSE;
+    }
+    elseif (!empty($output['err'])) {
       $migration['error'] = $output['err'];
+      $migration['error_data'] = $return->data;
       return FALSE;
     }
     else {
@@ -371,6 +377,7 @@ function _acquia_migrate_transmit(&$migration, $content) {
       // Check if response is correct, if not stop migration.
       if ($signature != $response_signature) {
         $migration['error'] = t('Signature from server is wrong');
+        $migration['error_data'] = $return->data;
         return FALSE;
       }
     }
@@ -382,6 +389,7 @@ function _acquia_migrate_transmit(&$migration, $content) {
     parse_str($parsed['query'], $query);
     if (!empty($query['err'])) {
       $migration['error'] = $query['err'];
+      $migration['error_data'] = $return->data;
       return FALSE;
     }
     else {
@@ -403,12 +411,14 @@ function _acquia_migrate_transmit(&$migration, $content) {
       }
       else {
         $migration['error'] = t('Signature from server is wrong');
+        $migration['error_data'] = $return->data;
         return FALSE;
       }
     }
   }
   else {
     $migration['error'] = t('Transfer error');
+    $migration['error_data'] = $return->data;
     return FALSE;
   }
 }
