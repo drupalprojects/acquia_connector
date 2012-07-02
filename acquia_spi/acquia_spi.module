@@ -458,7 +458,7 @@ function acquia_spi_get_version_info() {
     }
   }
   // Determine if this is Commons
-  elseif (is_dir($install_root . '/profiles/commons')) {
+  elseif (is_dir($install_root . '/profiles/drupal_commons') || is_dir($install_root . '/profiles/commons')) {
     $ver['distribution']  = 'Commons';
     // Earlier versions of Commons made version a constant.
     if (defined('DRUPAL_commons_release')) {
