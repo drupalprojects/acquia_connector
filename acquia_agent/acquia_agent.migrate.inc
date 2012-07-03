@@ -102,7 +102,7 @@ function acquia_migrate_prepare($environment) {
  * Ensure this response can work through migration.
  */
 function _acquia_migrate_process_setup() {
-  if (defined('PHP_OS') && in_array(PHP_OS, array('WINNT', 'WIN32', 'Windows'))) {
+  if (!defined('OS_WINDOWS') && defined('PHP_OS') && in_array(PHP_OS, array('WINNT', 'WIN32', 'Windows'))) {
     // OS_WINDOWS constant used by Archive_Tar.
     define('OS_WINDOWS', TRUE);
   }
@@ -300,9 +300,15 @@ function _acquia_migrate_archive_site(&$migration) {
     $gz = new Archive_Tar($dest_file, $migration['compression_ext'] ? $migration['compression_ext'] : NULL);
     if (!empty($migration['db_file'])) {
       // Add db file.
-      $ret = $gz->addModify(array($migration['db_file']), '', $migration['dir'] . '/');
+      $ret = $gz->addModify(array($migration['db_file']), '', $migration['dir'] . DIRECTORY_SEPARATOR);
     }
-    $ret = $gz->addModify($files, '', $root . '/');
+    if (defined('OS_WINDOWS')) {
+      $remove_dir = $root . '\\';
+    }
+    else {
+      $remove_dir = $root . '/';
+    }
+    $ret = $gz->addModify($files, '', $remove_dir);
     $migration['tar_file'] = $dest_file;
   }
   else {
@@ -315,6 +321,9 @@ function _acquia_migrate_archive_site(&$migration) {
  */
 function _acquia_migrate_validate_archive_files(&$migration, $files) {
   $output = implode("\n", $files);
+  if (defined('OS_WINDOWS')) {
+    $output = str_replace('\\', '/', $output);
+  }
   $docroot = preg_quote(getcwd() . '/');
 
   // Count the number of sites dirs with settings.php files and files
@@ -330,8 +339,15 @@ function _acquia_migrate_validate_archive_files(&$migration, $files) {
     $count_sqls += preg_match_all('@^(?:\./)?[^/\n.][^/\n]*\.sql$@m', $output, $docroot_sqls);
     $sqls[0] = array_merge($sqls[0], $docroot_sqls[0]);
   }
+  // Allow simpletest SQL files.
+  foreach ($sqls[0] as $key => $sql_file) {
+    if (strpos($sql_file, 'simpletest') !== FALSE) {
+      $count_sqls--;
+      unset($sqls[0][$key]);
+    }
+  }
 
-  if (!in_array(getcwd() . '/index.php', $files)) {
+  if (!in_array(getcwd() . DIRECTORY_SEPARATOR . 'index.php', $files)) {
     $$migration['error'] = "The archive file will not be in the correct format: no index.php found in root or top-level directory.";
   }
   elseif ($count_settingsphp > 1) {
