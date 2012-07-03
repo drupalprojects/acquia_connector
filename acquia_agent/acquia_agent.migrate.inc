@@ -340,10 +340,12 @@ function _acquia_migrate_validate_archive_files(&$migration, $files) {
     $sqls[0] = array_merge($sqls[0], $docroot_sqls[0]);
   }
   // Allow simpletest SQL files.
-  foreach ($sqls[0] as $key => $sql_file) {
-    if (strpos($sql_file, 'simpletest') !== FALSE) {
-      $count_sqls--;
-      unset($sqls[0][$key]);
+  if (!empty($sqls[0])) {
+    foreach ($sqls[0] as $key => $sql_file) {
+      if (strpos($sql_file, 'simpletest') !== FALSE) {
+        $count_sqls--;
+        unset($sqls[0][$key]);
+      }
     }
   }
 
