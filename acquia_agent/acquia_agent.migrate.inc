@@ -614,7 +614,7 @@ function _acquia_migrate_dump_table_data_sql_to_file($handle, $table) {
   while ($row = db_fetch_array($result)) {
     $items = array();
     foreach ($row as $key => $value) {
-      $items[] = is_null($value) ? "null" : "'" . mysql_escape_string($value) . "'";
+      $items[] = is_null($value) ? "null" : "'" . db_escape_string($value) . "'";
     }
     if ($items) {
       $data = "INSERT INTO `" . $table->Name . "` VALUES (" . implode(",", $items) . ");\n";
