@@ -688,19 +688,6 @@ function _acquia_migrate_get_tables_mysql() {
   return $out;
 }
 
-
-/**
- * Get the list of table names.
- */
-function _acquia_migrate_get_table_names_mysql() {
-  $out = array();
-  foreach (_acquia_migrate_get_tables_mysql() as $key => $table) {
-    $out[$key] = $table->name;
-  }
-  return $out;
-}
-
-
 /**
  * Create multipart boundary
  * 
