@@ -90,6 +90,7 @@ function acquia_migrate_prepare($environment) {
       'nonce' => $environment['nonce'],
     ),
     'env' => $environment,
+    'no_data_tables' => array(),
   );
 
   // Set up local storage of archive.
@@ -577,7 +578,7 @@ function _acquia_migrate_backup_db_to_file_mysql(&$migration) {
   $handle = fopen($file, 'w');
   $lines = 0;
   $exclude = array();
-  $nodata = array();
+  $nodata = $migration['no_data_tables'];
   if ($handle) {
     $data = _acquia_migrate_get_sql_file_header_mysql();
     fwrite($handle, $data);
