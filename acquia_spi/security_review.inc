@@ -5,9 +5,6 @@
  * Stand-alone security checks and review system.
  */
 
-// Define the version of this file in case it's used outside of its module.
-define('SECURITY_REVIEW_VERSION', '6.x-1.2');
-
 /**
  * Public function for running Security Review checklist and returning results.
  *
@@ -74,7 +71,7 @@ function _acquia_spi_security_review_run_check($module, $check_name, $check, $lo
 }
 
 /**
- * Checks for acquia_spi_security_review_security_checks() or acquia_spi_security_review_get_checks().
+ * Checks for acquia_spi_security_review_get_checks().
  */
 function _acquia_spi_security_review_security_checks() {
   $checks['file_perms'] = array(
