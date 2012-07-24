@@ -276,13 +276,15 @@ function acquia_agent_http_request($context, $url, $headers = array(), $method =
  * @return
  *   TRUE or FALSE.
  */
-function acquia_agent_valid_response($data) {
+function acquia_agent_valid_response($data, $key = NULL) {
   $authenticator = $data['authenticator'];
   $result = $data['result'];
   $result_auth = $result['authenticator'];
   $valid = ($authenticator['nonce'] == $result_auth['nonce']);
   $valid = $valid && ($authenticator['time'] < $result_auth['time']);
-  $key = acquia_agent_settings('acquia_key');
+  if (empty($key)) {
+    $key = acquia_agent_settings('acquia_key');
+  }
   $hash = _acquia_agent_hmac($key, $result_auth['time'], $result_auth['nonce'], $result['body']);
   return $valid && ($hash == $result_auth['hash']);
 }
