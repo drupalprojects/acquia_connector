@@ -838,7 +838,9 @@ function acquia_spi_get_platform_mysql_data() {
   // what happens if we run this on mssql or postgres
   $ret = array();
   while ($row = db_fetch_array($res)) {
-
+    if (!isset($row['Variable_name'])) {
+      continue;
+    }
     switch ($row['Variable_name']) {
       case 'Table_locks_waited':
         $ret['Table_locks_waited'] = $row['Value'];
