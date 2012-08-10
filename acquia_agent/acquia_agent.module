@@ -164,11 +164,16 @@ function acquia_agent_get_subscription($params = array(), $identifier = NULL, $k
   }
   // Include Acquia Search module version number.
   if (module_exists('acquia_search')) {
-    foreach (array('acquia_search', 'apachesolr') as $name) {
-      $info = db_result(db_query("SELECT info FROM {system} WHERE name = 'acquia_search'"));
-      if ($info = unserialize($info)) {
-        $params['search_version'] = $info['version'];
-      }
+    if (defined('ACQUIA_SEARCH_VERSION')) {
+      $params['search_version']['acquia_search'] = ACQUIA_SEARCH_VERSION;
+    }
+    else {
+      $params['search_version']['acquia_search'] = variable_get('acquia_search_version', '6.x-3.x');
+    }
+    $info = db_result(db_query("SELECT info FROM {system} WHERE name = 'apachesolr'"));
+    if ($info = unserialize($info)) {
+      // Send the Drupal core version if the module version is blank
+      $params['search_version']['apachesolr'] = isset($info['version']) ? (string)$info['version'] : $info['core'];
     }
   }
 
