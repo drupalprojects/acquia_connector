@@ -227,7 +227,7 @@ function acquia_spi_form_acquia_agent_settings_form_alter(&$form) {
     );
   }
 
-  $form['actions']['submit']['#submit'][] = 'acquia_agent_spi_set_submit';
+  $form['submit']['#submit'][] = 'acquia_agent_spi_set_submit';
 }
 
 /*
