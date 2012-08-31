@@ -239,7 +239,6 @@ function acquia_agent_spi_set_submit($form, &$form_state) {
   variable_set('acquia_spi_send_node_user', $form_state['values']['send_node_user']);
   variable_set('acquia_spi_send_watchdog', $form_state['values']['send_watchdog']);
   variable_set('acquia_spi_use_cron', $form_state['values']['spi_use_cron']);
-  drupal_set_message(t('The Acquia configuration options have been saved.'));
 }
 
 /**
