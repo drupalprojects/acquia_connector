@@ -636,7 +636,7 @@ function acquia_agent_migrate_form_submit($form, &$form_state) {
     return;
   }
 
-  $migrate_files = !empty($form_state['values']['migrate_files']) ? $form_state['values']['migrate_files'] : 1;
+  $migrate_files = isset($form_state['values']['migrate_files']) ? $form_state['values']['migrate_files'] : 1;
   variable_set('acquia_migrate_files', $migrate_files);
   $reduce_db_size = !empty($form_state['values']['reduce_db_size']) ? $form_state['values']['reduce_db_size'] : 0;
   if (count($form_state['values']['envs']) > 1) {
