@@ -194,9 +194,9 @@ function acquia_migrate_batch_test($migration, &$context) {
     $migration = $context['results']['migration'];
     variable_set('acquia_agent_cloud_migration', $migration);
   }
-  // Check for error and hault.
+  // Check for error and abort if appropriate.
   if (empty($migration) || $migration['error'] !== FALSE) {
-    $context['message'] = t('Encountered error, haulting');
+    $context['message'] = t('Encountered error, aborting migration.');
     return;
   }
 
@@ -214,9 +214,9 @@ function acquia_migrate_batch_db($migration, &$context) {
     $migration = $context['results']['migration'];
     variable_set('acquia_agent_cloud_migration', $migration);
   }
-  // Check for error and hault.
+  // Check for error and abort if appropriate.
   if (empty($migration) || $migration['error'] !== FALSE) {
-    $context['message'] = t('Encountered error, haulting');
+    $context['message'] = t('Encountered error, aborting migration.');
     return;
   }
 
@@ -234,9 +234,9 @@ function acquia_migrate_batch_tar($migration, &$context) {
     $migration = $context['results']['migration'];
     variable_set('acquia_agent_cloud_migration', $migration);
   }
-  // Check for error and hault.
+  // Check for error and abort if appropriate.
   if (empty($migration) || $migration['error'] !== FALSE) {
-    $context['message'] = t('Encountered error, haulting');
+    $context['message'] = t('Encountered error, aborting migration.');
     return;
   }
 
@@ -254,9 +254,9 @@ function acquia_migrate_batch_transmit($migration, &$context) {
     $migration = $context['results']['migration'];
     variable_set('acquia_agent_cloud_migration', $migration);
   }
-  // Check for error and hault.
+  // Check for error and abort if appropriate.
   if (empty($migration) || $migration['error'] !== FALSE) {
-    $context['message'] = t('Encountered error, haulting');
+    $context['message'] = t('Encountered error, aborting migration.');
     $context['finished'] = 1;
     return;
   }
@@ -736,7 +736,7 @@ function _acquia_migrate_get_tables_mysql() {
 
 /**
  * Create multipart boundary
- * 
+ *
  * @return
  *   Boundary
  */
