@@ -83,7 +83,8 @@ function acquia_agent_menu() {
  * Implementation of hook_init().
  */
 function acquia_agent_init() {
-  if (arg(2) != 'acquia-agent' && empty($_POST) &&
+  $hide_signup_messages = variable_get('acquia_agent_hide_signup_messages', 0);
+  if (!$hide_signup_messages && arg(2) != 'acquia-agent' && empty($_POST) &&
     user_access('administer site configuration') &&
     (!acquia_agent_has_credentials()) &&
     arg(0) !== 'filefield' && arg(1) != 'progress') {
