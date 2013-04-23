@@ -525,6 +525,13 @@ function acquia_agent_settings_form($form_state, $banner) {
   $identifier = acquia_agent_settings('acquia_identifier');
   $key = acquia_agent_settings('acquia_key');
   $subscription = acquia_agent_settings('acquia_subscription_name');
+  // Help documentation is local unless the Help module is disabled.
+  if (module_exists('help')) {
+    $help_url = url('admin/help/acquia_agent');
+  }
+  else {
+    $help_url = url('https://docs.acquia.com/network/install');
+  }
 
   if (empty($_POST)) {
     // Check our connection to the Acquia Network and validity of the crenditials.
@@ -561,8 +568,7 @@ function acquia_agent_settings_form($form_state, $banner) {
   $ssl_available = (in_array('ssl', stream_get_transports(), TRUE) && !defined('ACQUIA_DEVELOPMENT_NOSSL'));
   $form['connection']['acquia_agent_verify_peer'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Enhanced SSL security'),
-    '#description' => l('Learn more.', 'admin/help/acquia_agent'),
+    '#title' => t('Enhanced SSL security <a href="!url">Learn more</a>.', array('!url' => $help_url)),
     '#default_value' => (int) (variable_get('acquia_agent_verify_peer', 1) && $ssl_available),
     '#disabled' => !$ssl_available,
   );
@@ -574,7 +580,7 @@ function acquia_agent_settings_form($form_state, $banner) {
   $form['migrate'] = array(
     '#type' => 'fieldset',
     '#title' => t('Acquia Cloud Migrate'),
-    '#description' => t('Transfer a fully-functional copy of your site to Acquia Cloud. <a href="!url">Read more</a>', array('!url' => url('https://docs.acquia.com/cloud/site/import/connector'))),
+    '#description' => t('Transfer a fully-functional copy of your site to Acquia Cloud. <a href="!url">Learn more</a>.', array('!url' => url('https://docs.acquia.com/cloud/site/import/connector'))),
     '#collapsible' => TRUE,
     '#collapsed' => $collapsed,
   );
