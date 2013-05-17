@@ -28,18 +28,18 @@ function acquia_spi_help($path, $arg) {
  * Implementation of hook_cron().
  */
 function acquia_spi_cron() {
-  
+
   // Get the last time we processed data.
   $last = variable_get('acquia_spi_cron_last', 0);
-  
+
   // 30 minute interval for sending site profile.
   $interval = variable_get('acquia_spi_cron_interval', 30);
-  
-  // Allow an override. 
+
+  // Allow an override.
   if (variable_get('acquia_spi_cron_interval_override', FALSE)) {
     $interval = variable_get('acquia_spi_cron_interval_override', 30);
   }
-  
+
   // Determine if the required interval has passed.
   $now = time();
   if (variable_get('acquia_spi_use_cron', 1) && $now - $last > ($interval * 60)) {
@@ -165,7 +165,7 @@ function acquia_spi_send_module_data($data = array()) {
     if (is_file($file_path) && strpos($file_path, $document_root) === 0 && strpos($file_path, 'settings.php') === FALSE) {
       $file_contents = file_get_contents($file_path);
       header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
-      header("Content-Type:text");  
+      header("Content-Type:text");
       header("Cache-Control: no-cache");
       header("Pragma: no-cache");
       return $file_contents;
@@ -194,7 +194,7 @@ function acquia_spi_form_acquia_agent_settings_form_alter(&$form) {
 
   $ssl_available = (in_array('ssl', stream_get_transports(), TRUE) && !defined('ACQUIA_DEVELOPMENT_NOSSL'));
   $form['connection']['#description'] = t('Allow collection and examination of the following items. <a href="!url">Learn more</a>.', array('!url' => $help_url));
-  
+
   $form['connection']['spi'] = array(
     '#prefix' => '<div class="acquia-spi">',
     '#suffix' => '</div>',
@@ -328,7 +328,7 @@ function acquia_spi_update_definition() {
     foreach($new_vars as $new_var_name => $new_var) {
       // Count if received from NSPI optional variable is not present in old local SPI definition
       // or if it already was in old SPI definition, but was not optional
-      if ($new_var['optional'] && !array_key_exists($new_var_name, $old_vars) || 
+      if ($new_var['optional'] && !array_key_exists($new_var_name, $old_vars) ||
           $new_var['optional'] && isset($old_vars[$new_var_name]) && !$old_vars[$new_var_name]['optional']) {
         $new_optional_vars++;
       }
@@ -502,9 +502,9 @@ function _acquia_spi_security_review_compatible() {
 }
 
 /**
- * Attempt to determine the version of Drupal being used. 
+ * Attempt to determine the version of Drupal being used.
  * Note, there is better information on this in the common.inc file.
- * 
+ *
  * @return array
  *    An array containing some detail about the version
  */
@@ -513,6 +513,7 @@ function acquia_spi_get_version_info() {
   $ver = array();
 
   $ver['base_version'] = VERSION;
+  $ver['distribution'] = '';
   $install_root = $server['DOCUMENT_ROOT'] . base_path();
 
   // Determine if this puppy is Acquia Drupal
@@ -568,18 +569,18 @@ function acquia_spi_check_login() {
   $login_safe = 0;
   if (module_exists('securepages')) {
 
-    if (drupal_match_path('user/login', variable_get('securepages_pages', ''))) { 
-      $login_safe = 1; 
+    if (drupal_match_path('user/login', variable_get('securepages_pages', ''))) {
+      $login_safe = 1;
     }
-    if (drupal_match_path('user/login', variable_get('securepages_ignore', ''))) { 
-      $login_safe = 0; 
+    if (drupal_match_path('user/login', variable_get('securepages_ignore', ''))) {
+      $login_safe = 0;
     }
-    if (!variable_get('securepages_secure', FALSE) || !variable_get('securepages_enable', FALSE)) { 
-      $login_safe = 0; 
+    if (!variable_get('securepages_secure', FALSE) || !variable_get('securepages_enable', FALSE)) {
+      $login_safe = 0;
     }
-    
+
   }
-  
+
   return $login_safe;
 }
 
@@ -589,23 +590,23 @@ function acquia_spi_check_login() {
  * @param n/a
  *
  * @return boolean
- *   
+ *
  */
 function acquia_spi_get_settings_permissions() {
   $settings_permissions_read_only = TRUE;
   $writes = array('2', '3', '6', '7'); // http://en.wikipedia.org/wiki/File_system_permissions
   $settings_file = './'. conf_path(FALSE, TRUE) .'/settings.php';
-  $permissions = drupal_substr(sprintf('%o', fileperms($settings_file)), -4);  
-  
+  $permissions = drupal_substr(sprintf('%o', fileperms($settings_file)), -4);
+
   foreach ($writes as $bit) {
     if (strpos($permissions, $bit)) {
-      $settings_permissions_read_only = FALSE;      
+      $settings_permissions_read_only = FALSE;
       break;
     }
   }
-  
+
   return $settings_permissions_read_only;
-  
+
 }
 
 /**
@@ -828,7 +829,7 @@ function acquia_spi_get_failed_logins() {
 
 /**
  * Determine if the super user has a weak name
- * 
+ *
  * @return boolean
  */
 function acquia_spi_get_super_name() {
@@ -1075,7 +1076,7 @@ function acquia_spi_get_system_status() {
  *   information on the modules.
  */
 function acquia_spi_get_modules() {
-  
+
   // Only do a full rebuild of the module cache every 1 at the most
   $last_build = variable_get('acquia_spi_module_rebuild', 0);
   if ($last_build < time() - 86400) {
@@ -1089,7 +1090,7 @@ function acquia_spi_get_modules() {
       $modules[$file->filename] = $file;
     }
   }
-  
+
   $result = array();
   $keys_to_send = array('name', 'version', 'package', 'core', 'project');
   foreach ($modules as $filename => $file) {
@@ -1108,7 +1109,7 @@ function acquia_spi_get_modules() {
     // Otherwise it is covered by the hash of the distro's modules
     if ($module_path[0] == 'sites') {
       $contrib_path = implode('/', $module_path);
-      
+
       // Get a hash for this module's files. If we nest into another module, we'll return
       // and that other module will be covered by it's entry in the system table.
       //
@@ -1124,7 +1125,7 @@ function acquia_spi_get_modules() {
 
     $result[] = $info;
   }
-  
+
   return $result;
 }
 
@@ -1162,7 +1163,7 @@ function acquia_spi_uid_0_present() {
  *
  * @param $excuded_dirs
  *   Optional array of directory paths to be excluded.
- * 
+ *
  * @return
  *   An associative array keyed by filename of hashes.
  */
