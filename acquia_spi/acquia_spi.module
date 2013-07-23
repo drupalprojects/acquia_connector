@@ -78,9 +78,43 @@ function acquia_spi_boot() {
   // Determine if the required interval has passed.
   $now = time();
   if ((($now - $last) > ($interval * 60))) {
-    cache_set('acquia_spi_server', $_SERVER);
+    $platform = acquia_spi_get_platform();
+    acquia_spi_data_store_set(array('platform' => $platform));
     variable_set('acquia_spi_boot_last', $now);
   }
+}
+
+/**
+ * Put SPI data in local storage.
+ *
+ * @param array $data Keyed array of data to store.
+ * @param int $expire Expire time or null to use default of 1 day.
+ */
+function acquia_spi_data_store_set($data, $expire = NULL) {
+  if (is_null($expire)) {
+    $expire = time() + (60*60*24);
+  }
+  foreach ($data as $key => $value) {
+    cache_set('acquia.spi.' . $key, $value, 'cache', $expire);
+  }
+}
+
+/**
+ * Get SPI data out of local storage.
+ *
+ * @param array Array of keys to extract data for.
+ *
+ * @return array Stored data or false if no data is retrievable from storage.
+ */
+function acquia_spi_data_store_get($keys) {
+  $store = array();
+  foreach ($keys as $key) {
+    $cache = cache_get('acquia.spi.' . $key, 'cache');
+    if ($cache && !empty($cache->data)) {
+      $store[$key] = $cache->data;
+    }
+  }
+  return $store;
 }
 
 /**
@@ -370,12 +404,18 @@ function acquia_spi_get() {
   // Get the Drupal version
   $drupal_version = acquia_spi_get_version_info();
 
-  // Default values return
+  $stored = acquia_spi_data_store_get(array('platform'));
+  if (!empty($stored['platform'])) {
+    $platform = $stored['platform'];
+  }
+  else {
+    $platform = acquia_spi_get_platform();
+  }
   $spi = array(
     'spi_data_version' => ACQUIA_SPI_DATA_VERSION,
     'site_key'        => sha1(drupal_get_private_key()),
     'modules'        => acquia_spi_get_modules(),
-    'platform'       => acquia_spi_get_platform(),
+    'platform'       => $platform,
     'quantum'        => acquia_spi_get_quantum(),
     'system_status'  => acquia_spi_get_system_status(),
     'failed_logins'  => variable_get('acquia_spi_send_watchdog', 1) ? acquia_spi_get_failed_logins() : array(),
@@ -509,7 +549,8 @@ function _acquia_spi_security_review_compatible() {
  *    An array containing some detail about the version
  */
 function acquia_spi_get_version_info() {
-  $server = acquia_spi_get_server();
+  $store = acquia_spi_data_store_get(array('platform'));
+  $server = (!empty($store) && isset($store['platform'])) ? $store['platform']['php_quantum']['SERVER'] : $_SERVER;
   $ver = array();
 
   $ver['base_version'] = VERSION;
@@ -618,7 +659,8 @@ function acquia_spi_get_settings_permissions() {
  *   True if they are removed, false if they aren't
  */
 function acquia_spi_check_files_present() {
-  $server = acquia_spi_get_server();
+  $store = acquia_spi_data_store_get(array('platform'));
+  $server = (!empty($store) && isset($store['platform'])) ? $store['platform']['php_quantum']['SERVER'] : $_SERVER;
   $files_exist = FALSE;
   $url = url(NULL, array('absolute' => TRUE));
   $files_to_remove = array('CHANGELOG.txt', 'COPYRIGHT.txt', 'INSTALL.mysql.txt', 'INSTALL.pgsql.txt', 'INSTALL.txt', 'LICENSE.txt',
@@ -875,11 +917,10 @@ function acquia_spi_get_admin_count() {
  *   An associative array keyed by a platform information type.
  */
 function acquia_spi_get_platform() {
-  $server = acquia_spi_get_server();
-  // Database detection depends on the structure starting with the database
-  // 'type-name' => array('title' => 'name', 'value' => 'version-info') data.
-  $database = db_status_report('');
-  $database_type = array_shift(array_keys($database));
+  global $db_type;
+  $server = $_SERVER;
+
+  $database_type = $db_type;
   // Webserver detection is based on name being before the slash, and
   // version being after the slash.
   preg_match('!^([^/]+)(/.+)?$!', $server['SERVER_SOFTWARE'], $webserver);
@@ -918,13 +959,11 @@ function acquia_spi_get_platform() {
     'php_extensions'    => get_loaded_extensions(),
     'php_quantum'       => $php_quantum,
     'database_type'     => $database_type,
-    'database_version'  => $database[$database_type]['value'],
+    'database_version'  => db_version(),
     'system_type'       => php_uname('s'),
     // php_uname() only accepts one character, so we need to concatenate ourselves.
     'system_version'    => php_uname('r') .' '. php_uname('v') .' '. php_uname('m') .' '. php_uname('n'),
     'mysql'             => ($database_type == 'mysql') ? acquia_spi_get_platform_mysql_data() : array(),
-    'server'            => '',
-    'apache'            => '',
   );
 
   // Never send NULL (or FALSE?) - that causes hmac errors.
@@ -1284,14 +1323,4 @@ function acquia_spi_hash_path($path = '') {
     }
   }
   return $hash;
-}
-
-/**
- * Extract the $_SERVER variable from cache.
- * @return
- *   The global server variable from an earlier pageload.
- */
-function acquia_spi_get_server() {
-  $cache = cache_get('acquia_spi_server');
-  return !empty($cache->data) ? $cache->data : $_SERVER;
 }
