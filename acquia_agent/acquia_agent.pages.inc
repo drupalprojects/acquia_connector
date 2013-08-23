@@ -148,21 +148,18 @@ function acquia_agent_migrate_form(&$form_state) {
       '#value' => t('<p>Available environment for migration: %env</p>', array('%env' => array_pop($envs))),
     );
   }
-  $last_migration = variable_get('acquia_agent_cloud_migration', array());
-  if (!empty($last_migration)) {
-    $form['migrate_files'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Migrate files directory'),
-      '#description' => t('Include files directory and all files in migration. If you are experiencing migration errors it is recommended you do not send the files directory.'),
-      '#default_value' => variable_get('acquia_migrate_files', 1),
-    );
-    $form['reduce_db_size'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Reduce database export size'),
-      '#description' => t('Reduce the database export size by excluding the data from cache, session, and watchdog tables. If you are experiencing migration errors this is recommended. Table structure will still be exported.'),
-      '#default_value' => 0,
-    );
-  }
+  $form['migrate_files'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Migrate files directory'),
+    '#description' => t('Include files directory and all files in migration. If you are experiencing migration errors it is recommended you do not send the files directory.'),
+    '#default_value' => variable_get('acquia_migrate_files', 1),
+  );
+  $form['reduce_db_size'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Reduce database export size'),
+    '#description' => t('Reduce the database export size by excluding the data from cache, session, and watchdog tables. If you are experiencing migration errors this is recommended. Table structure will still be exported.'),
+    '#default_value' => 0,
+  );
 
   $form['submit'] = array(
     '#type' => 'submit',
@@ -315,7 +312,7 @@ function acquia_agent_automatic_setup_form_validate($form, &$form_state) {
       form_set_error('email', t('Account not found on the Acquia Network.'));
     }
     else {
-      // Build hashed password from account password settings for further 
+      // Build hashed password from account password settings for further
       // XML-RPC communications with acquia.com.
       $pass = _acquia_agent_hash_password_crypt($result['algorithm'], $form_state['values']['pass'], $result['hash_setting'], $result['extra_md5']);
       $form_state['storage']['pass'] = $pass;
