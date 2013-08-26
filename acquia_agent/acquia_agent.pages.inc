@@ -731,3 +731,18 @@ function acquia_agent_an_info_header() {
   return $output;
 }
 
+/**
+ * Returns basic site information in JSON.
+ */
+function acquia_agent_site_status() {
+  $data = array(
+    'version' => '1.0',
+    'data' => array(
+      'maintenance_mode' => (bool) variable_get('acquia_site_offline', 0),
+      'cache' => (bool) variable_get('acquia_cache', 0),
+      'block_cache' => (bool) variable_get('block_cache', 0),
+    ),
+  );
+
+  drupal_json($data);
+}
