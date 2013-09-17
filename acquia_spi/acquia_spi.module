@@ -693,7 +693,22 @@ function acquia_spi_check_login() {
     if (!variable_get('securepages_secure', FALSE) || !variable_get('securepages_enable', FALSE)) {
       $login_safe = 0;
     }
-
+  }
+  elseif (module_exists('securelogin')) {
+    // All the required forms should be enabled.
+    $required_forms = array(
+      'securelogin_registerform',
+      'securelogin_redirect',
+      'securelogin_profileform',
+      'securelogin_loginform',
+    );
+    $login_safe = 1;
+    foreach ($required_forms as $form_variable) {
+      if (!variable_get($form_variable, TRUE)) {
+        $login_safe = 0;
+        break;
+      }
+    }
   }
 
   return $login_safe;
