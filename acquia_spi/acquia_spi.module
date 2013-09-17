@@ -517,6 +517,18 @@ function acquia_spi_get() {
     }
   }
 
+  // It's worth sending along node access control information even if there are
+  // no modules implementing it - some alerts are simpler if we know we don't
+  // have to worry about node access.
+
+  // Check for node grants modules.
+  $additional_data['node_grants_modules'] = module_implements('node_grants', TRUE);
+
+  // Check for node access modules.
+  // hook_node_access() is hook_access() in Drupal 6, but we place it into
+  // the same additional data key for ease of processing.
+  $additional_data['node_access_modules'] = module_implements('access', TRUE);
+
   if (!empty($additional_data)) {
     // JSON encode this additional data.
     $spi['additional_data'] = _acquia_spi_json($additional_data);
