@@ -300,7 +300,7 @@ function acquia_agent_check_subscription($params = array()) {
 function acquia_agent_get_subscription($params = array(), $identifier = NULL, $key = NULL, $acquia_network_address = NULL) {
   // There is an identifier and key, so attempt communication.
   $subscription = array();
-  $subscription['timestamp'] = REQUEST_TIME;
+  $subscription['timestamp'] = time();
 
   // Include version number information.
   acquia_agent_load_versions();
@@ -810,7 +810,7 @@ function _acquia_agent_authenticator($params = array(), $identifier = NULL, $key
   if (empty($key)) {
     $key = acquia_agent_settings('acquia_key');
   }
-  $time = REQUEST_TIME;
+  $time = time();
   $nonce = base64_encode(hash('sha256', drupal_random_bytes(55), TRUE));
   $authenticator['identifier'] = $identifier;
   $authenticator['time'] = $time;
@@ -852,7 +852,7 @@ function _acquia_agent_hmac($key, $time, $nonce, $params) {
  */
 function _acquia_agent_create_authenticator($body, $pass = NULL) {
   $auth = array();
-  $auth['time'] = REQUEST_TIME;
+  $auth['time'] = time();
   $auth['nonce'] = base64_encode(hash('sha256', drupal_random_bytes(55), TRUE));
   if (isset($pass)) {
     $auth['hash'] = _acquia_agent_hmac($pass, $auth['time'], $auth['nonce'], $body);
