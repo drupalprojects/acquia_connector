@@ -248,7 +248,7 @@ function acquia_agent_theme() {
  * This check also sends a heartbeat to the Acquia Network unless
  * $params['no_heartbeat'] == 1.
  *
- * @return FALSE, integer (xmlrpc error number), or subscription data
+ * @return xmlrpc error number int or subscription data
  */
 function acquia_agent_check_subscription($params = array()) {
   $current_subscription = acquia_agent_settings('acquia_subscription_data');
@@ -274,6 +274,10 @@ function acquia_agent_check_subscription($params = array()) {
           // error message.
           return $current_subscription;
       }
+    }
+    elseif ($subscription === FALSE) {
+      // Occurs when response validation failed so do not invoke status update.
+      return $current_subscription;
     }
     variable_set('acquia_subscription_data', $subscription);
     // Check if our main subscription is active
