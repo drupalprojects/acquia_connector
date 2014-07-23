@@ -1,6 +1,6 @@
 name = Acquia search
 description = "Provides integration between your Drupal site and Acquia's hosted search service."
-package = Acquia Network Connector
+package = Acquia Connector
 core = 7.x
 
 dependencies[] = acquia_agent

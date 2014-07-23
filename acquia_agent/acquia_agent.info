@@ -1,6 +1,6 @@
 name = Acquia agent
-description = "Allows Drupal to securely communicate with the Acquia Network, and checks for updates to Acquia Drupal."
-package = Acquia Network Connector
+description = "Allows Drupal to securely communicate with Acquia Insight, and checks for updates to Acquia Drupal."
+package = Acquia Connector
 core = 7.x
 configure = admin/config/system/acquia-agent
 files[] = tests/acquia_agent.test
