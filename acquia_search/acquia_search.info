@@ -3,6 +3,8 @@ description = "Provides integration between your Drupal site and Acquia's hosted
 package = Acquia Connector
 core = 7.x
 
+configure = admin/config/search/apachesolr/settings
+
 dependencies[] = acquia_agent
 dependencies[] = apachesolr
 dependencies[] = apachesolr_search
