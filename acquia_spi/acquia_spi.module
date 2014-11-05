@@ -562,6 +562,9 @@ function acquia_spi_get() {
   // Check for node access modules.
   $additional_data['node_access_modules'] = module_implements("node_access", TRUE);
 
+  // Check for drupal_fast_404 usage.
+  $additional_data['fast_404'] = acquia_spi_get_fast404();
+
   if (!empty($security_review_results)) {
     $additional_data['security_review'] = $security_review_results['security_review'];
   }
@@ -617,6 +620,48 @@ function acquia_spi_get() {
 
     return array_merge($spi, $spi_ssl);
   }
+}
+
+/**
+ * Check to see if fast_404 is enabled in settings.php. Fast 404 is enabled when
+ * the "drupal_fast_404()" function is uncommented in settings.php. Since it's
+ * difficult, if not impossible to safely tell if the drupal_fast_404() function
+ * is uncommented in settings.php (or any files included by settings.php), we'll
+ * instead compare a theoretically known 404 to the expected fast 404 return.
+ *
+ * @return array
+ *   An array of fast 404 data, with keys:
+ *   - enabled: boolean indicating whether drupal_fast_404() is enabled or not
+ *   - base_url: the base URL used to check for a valid 404.
+ *   - response_code: the HTTP response code provided during the 404 check.
+ *
+ */
+function acquia_spi_get_fast404() {
+
+  global $base_url;
+
+  $path = sprintf('acquia-connector-fast-404-check-%s.css', uniqid());
+  $url  = rtrim($base_url, DIRECTORY_SEPARATOR) . base_path() . $path;
+
+  $response = drupal_http_request($url);
+  $expected = variable_get('404_fast_html', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN" "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>The requested URL "@path" was not found on this server.</p></body></html>');
+  $expected = strtr($expected, array('@path' => base_path() . $path));
+
+  if (isset($response->code) && $response->code != 404) {
+    watchdog('acquia spi', 'A fast 404 test to @url returned a non-404 result (@code): @error.', array(
+      '@url' => $url,
+      '@code' => $response->code,
+      '@error' => $response->error,
+    ), WATCHDOG_WARNING);
+    return FALSE;
+  }
+
+  return array(
+    'enabled' => isset($response->data) && $response->data == $expected,
+    'base_url' => rtrim($base_url, DIRECTORY_SEPARATOR),
+    'response_code' => isset($response->code) ? $response->code : NULL,
+  );
+
 }
 
 /**
