@@ -1,5 +1,10 @@
 <?php
 
+
+use Drupal\search_api\Entity\Server;
+use Drupal\acquia_connector\CryptConnector;
+
+define('ACQUIA_SEARCH_ENVIRONMENT_ID', 'acquia_search_server_1');
 /**
  * @file
  *   drush integration for acquia_search.
@@ -13,7 +18,7 @@
  */
 function acquia_search_drush_command() {
   $items = array();
-  
+
   $items['solr-set-derived-key'] = array(
     'callback' => 'acquia_search_set_derived_key_for_env',
     'description' => dt('Sets an environment to be active for Acquia search using a specific derived key.
@@ -23,10 +28,10 @@ function acquia_search_drush_command() {
         'description' => 'Apache Solr environment id.',
       ),
       'acquia-id' => array(
-        'description' => 'Acquia Network Subscription ID.',
+        'description' => 'Acquia Subscription ID.',
       ),
       'acquia-key' => array(
-        'description' => 'Acquia Network Subscription Key.',
+        'description' => 'Acquia Subscription Key.',
       ),
     ),
     'examples' => array(
@@ -72,7 +77,7 @@ function acquia_search_set_derived_key_for_env() {
   if ($env_id == ACQUIA_SEARCH_ENVIRONMENT_ID) {
     return drush_set_error('DRUSH_VARIABLE_ERROR', dt('Modifying the original Acquia Search subscription is not allowed. Please use another environment'));
   }
-  $environment = apachesolr_environment_load($env_id);
+  $environment = Server::load($env_id);
   // Check if the environment is valid
   if (empty($environment)) {
     return drush_set_error('DRUSH_ACQUIA_ERROR', dt('The specified environment does not exist'));
@@ -81,13 +86,13 @@ function acquia_search_set_derived_key_for_env() {
   $acquia_id = drush_get_option('acquia-id');
   // check on bool, because drush sets the var as true if no value is given.
   if (empty($acquia_id) || is_bool($acquia_id)) {
-    return drush_set_error('DRUSH_VARIABLE_ERROR', dt('No Acquia network subscription id specified'));
+    return drush_set_error('DRUSH_VARIABLE_ERROR', dt('No Acquia subscription id specified'));
   }
   // acquia network subscription key
   $acquia_key = drush_get_option('acquia-key');
   // check on bool, because drush sets the var as true if no value is given.
   if (empty($acquia_key) || !is_string($acquia_key)) {
-    return drush_set_error('DRUSH_VARIABLE_ERROR', dt('No Acquia network subscription key specified'));
+    return drush_set_error('DRUSH_VARIABLE_ERROR', dt('No Acquia subscription key specified'));
   }
 
   // We do not want to send a heartbeat to the server, we only need subscription data
@@ -95,7 +100,7 @@ function acquia_search_set_derived_key_for_env() {
     'active' => FALSE,
     'no_heartbeat' => 1,
   );
-  $subscription = acquia_agent_get_subscription($params, $acquia_id, $acquia_key);
+  $subscription = \Drupal::service('acquia_connector.client')->getSubscription($acquia_id, $acquia_key, $params);
   // Check if the subscription was valid
   if (!is_array($subscription)) {
     return drush_set_error('DRUSH_ACQUIA_ERROR', dt('Could not fetch data for specified subscription.'));
@@ -108,17 +113,13 @@ function acquia_search_set_derived_key_for_env() {
   if (empty($salt)) {
     return drush_set_error('DRUSH_ACQUIA_ERROR', dt('Could not get a salt.'));
   }
-  $derived_key = _acquia_search_create_derived_key($salt, $acquia_id, $acquia_key);
-  if (!empty($derived_key)) {
-    $environment['url'] = 'http://search.acquia.com/solr/' . $acquia_id;
-    // We want to show that this specific environment was connected to Acquia.
-    // If you update the key, make sure the name is not altered twice.
-    if (!strpos($environment['name'], '(connected to Acquia)')) {
-      $environment['name'] = $environment['name'] . ' (connected to Acquia)';
-    }
 
-    apachesolr_environment_save($environment);
-    apachesolr_environment_variable_set($env_id, 'acquia_search_key', $derived_key);
+  $derived_key = CryptConnector::createDerivedKey($salt, $acquia_id, $acquia_key);
+  if (!empty($derived_key)) {
+    $environment->set('host', acquia_search_get_search_host());
+    $environment->set('path', '/solr/' . $acquia_id);
+    $environment->save();
+    \Drupal::configFactory()->getEditable('acquia_search.settings')->set('derived_key', $derived_key)->save();
   }
   else {
     return drush_set_error('DRUSH_ACQUIA_ERROR', dt('Could not generate a derived key.'));
