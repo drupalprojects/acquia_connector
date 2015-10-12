@@ -422,7 +422,7 @@ function acquia_spi_security_review_check_admin_permissions() {
   foreach ($untrusted_permissions as $rid => $permissions) {
     $intersect = array_intersect($all_keys, array_keys($permissions));
     foreach ($intersect as $permission) {
-      if (isset($all_permissions[$permission]['restrict access'])) {
+      if (!empty($all_permissions[$permission]['restrict access'])) {
         $check_result_value[$rid][] = $permission;
       }
     }
