@@ -1,5 +1,0 @@
-acquia_connector.form:
-  version: VERSION
-  css:
-    component:
-      css/acquia_connector.admin.theme.css: {}
