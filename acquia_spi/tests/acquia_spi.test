@@ -13,6 +13,9 @@ class AcquiaSPITestCase extends DrupalWebTestCase {
   protected $platformKeys = array('php', 'webserver_type', 'webserver_version', 'apache_modules', 'php_extensions', 'php_quantum', 'database_type', 'database_version', 'system_type', 'system_version', 'mysql');
   protected $spiDataKeys = array(
     'spi_data_version',
+    'name',
+    'machine_name',
+    'acquia_hosted',
     'site_key',
     'modules',
     'platform',
