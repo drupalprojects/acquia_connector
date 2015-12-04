@@ -703,7 +703,7 @@ function acquia_spi_security_review_check_views_access($last_check = NULL) {
   // Load and loop through every view, checking the access type in displays.
   $views = views_get_all_views();
   foreach ($views as $view) {
-    if ($view->disabled !== TRUE) {
+    if (empty($view->disabled)) {
       // Access is set in display options of a display.
       foreach ($view->display as $display_name => $display) {
         if (isset($display->display_options['access']) && $display->display_options['access']['type'] == 'none') {
