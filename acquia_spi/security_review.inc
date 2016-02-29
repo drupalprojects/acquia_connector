@@ -556,8 +556,10 @@ function acquia_spi_security_review_check_executable_php($last_check = NULL) {
 
 /**
  * Helper function to analyze .htaccess in specified directory.
- * @param $directory string
- * @return bool
+ *
+ * @param string $directory
+ *
+ * @return boolean
  */
 function _acquia_spi_security_review_htaccess_analyze($directory) {
   $contents = file_get_contents($directory . '/.htaccess');
@@ -594,8 +596,10 @@ function _acquia_spi_security_review_htaccess_analyze($directory) {
 
 /**
  * Helper function to parse .htaccess data into nested array.
+ *
  * @param $htaccess string
  *  .htaccess file content
+ *
  * @return array
  *  Array of parsed data. Nested sections converted into two-dimensional array.
  */

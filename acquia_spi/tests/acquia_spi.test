@@ -52,7 +52,7 @@ class AcquiaSPITestCase extends DrupalWebTestCase {
   public function setUp() {
     global $base_url;
     // Enable any modules required for the test
-    parent::setUp('acquia_agent', 'acquia_spi', 'acquia_connector_test');
+    parent::setUp('acquia_agent', 'acquia_spi', 'acquia_connector_test', 'dblog');
     // Create and log in our privileged user.
     $this->privileged_user = $this->drupalCreateUser(array(
       'administer site configuration',
@@ -71,6 +71,10 @@ class AcquiaSPITestCase extends DrupalWebTestCase {
 
   /**
    * Helper function for storing UI strings.
+   *
+   * @param string $id
+   *
+   * @return string
    */
   private function acquiaSPIStrings($id) {
     switch ($id) {
@@ -87,6 +91,7 @@ class AcquiaSPITestCase extends DrupalWebTestCase {
       case 'spi-new-def':
         return 'There are new checks that will be performed on your site by the Acquia Connector';
     }
+    return '';
   }
 
   public function testAcquiaSPIUI() {
@@ -274,6 +279,49 @@ class AcquiaSPITestCase extends DrupalWebTestCase {
     acquia_spi_set_variables($set_variables);
     $vars = drupal_json_decode(acquia_spi_get_variables_data());
     $this->assertIdentical($vars['acquia_spi_set_variables_automatic'], array('test_variable'), 'Altered approved list of variables that can be set');
+  }
+
+  /**
+   * Test acquia_spi_check_acquia_hosted() function.
+   */
+  public function testAcquiaHosted() {
+    $server = array();
+
+    variable_set('acquia_agent_server_superglobal', $server);
+    $this->assertFalse(acquia_spi_check_acquia_hosted(), 'Site is not hosted with Acquia');
+
+    $server = array(
+      'AH_SITE_NAME'        => 'site_name',
+      'AH_SITE_ENVIRONMENT' => 'dev',
+    );
+
+    variable_set('acquia_agent_server_superglobal', $server);
+    $this->assertTrue(acquia_spi_check_acquia_hosted(), 'Site is hosted with Acquia');
+
+    variable_del('acquia_agent_server_superglobal');
+  }
+
+  /**
+   * Test Cache clear detected.
+   */
+  public function testFlushCaches() {
+    $server = array(
+      'AH_SITE_NAME'        => 'site_name',
+      'AH_SITE_ENVIRONMENT' => 'dev',
+    );
+
+    variable_set('acquia_agent_server_superglobal', $server);
+    drupal_flush_all_caches();
+    $result = db_query('SELECT w.wid FROM {watchdog} w WHERE w.message = :string', array(':string' => 'Flushed cache data on %site'))->fetchAllAssoc('wid');
+    $this->assertFalse(count($result), "Cache clear detection is not triggered for dev environment");
+
+    $server['AH_SITE_ENVIRONMENT'] = 'prod';
+    variable_set('acquia_agent_server_superglobal', $server);
+    drupal_flush_all_caches();
+    $result = db_query('SELECT w.wid FROM {watchdog} w WHERE w.message = :string', array(':string' => 'Flushed cache data on %site'))->fetchAllAssoc('wid');
+    $this->assertTrue(count($result), "Cache clear detected for prod environment");
+
+    variable_del('acquia_agent_server_superglobal');
   }
 
   /**

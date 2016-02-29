@@ -122,7 +122,7 @@ function acquia_agent_site_status_access() {
     $info = array(
       'sub_data' => $sub_data,
       'sub_uuid_from_data' => $sub_uuid,
-      'expected_hash' => $expected_hash,
+      'expected_hash' => isset($expected_hash) ? $expected_hash : '',
       'get' => $_GET,
       'server' => $_SERVER,
       'request' => $_REQUEST,
@@ -248,7 +248,8 @@ function acquia_agent_theme() {
  * This check also sends a heartbeat to Acquia Insight unless
  * $params['no_heartbeat'] == 1.
  *
- * @return xmlrpc error number int or subscription data
+ * @return int|array
+ *   xmlrpc error number or subscription data
  */
 function acquia_agent_check_subscription($params = array()) {
   $current_subscription = acquia_agent_settings('acquia_subscription_data');
@@ -290,12 +291,18 @@ function acquia_agent_check_subscription($params = array()) {
 }
 
 /**
- * Get subscription status from Acquia
+ * Get subscription status from Acquia.
  *
  * This check also sends a heartbeat to Acquia Insight unless
  * $params['no_heartbeat'] == 1.
  *
- * @return FALSE, integer (xmlrpc error number), or subscription data
+ * @param array $params
+ * @param string $identifier
+ * @param string $key
+ * @param string $acquia_network_address
+ *
+ * @return mixed
+ *   FALSE, integer (xmlrpc error number), or subscription data
  */
 function acquia_agent_get_subscription($params = array(), $identifier = NULL, $key = NULL, $acquia_network_address = NULL) {
   // There is an identifier and key, so attempt communication.
@@ -327,15 +334,15 @@ function acquia_agent_get_subscription($params = array(), $identifier = NULL, $k
     }
   }
 
-  // Retrieve our subscription details
+  // Retrieve our subscription details.
   $data = acquia_agent_call('acquia.agent.subscription', $params, $identifier, $key, $acquia_network_address);
 
-  // Check for errors
+  // Check for errors.
   if ($errno = xmlrpc_errno()) {
     return $errno;
   }
   elseif (acquia_agent_valid_response($data, $key)) {
-    // Add the response to our subscription array
+    // Add the response to our subscription array.
     $subscription += $data['result']['body'];
   }
   else {
@@ -346,6 +353,9 @@ function acquia_agent_get_subscription($params = array(), $identifier = NULL, $k
   return $subscription;
 }
 
+/**
+ * Helper function, displays the last XML-RPC client error message.
+ */
 function acquia_agent_report_xmlrpc_error() {
   drupal_set_message(t('Error: @message (@errno)', array('@message' => xmlrpc_error_msg(), '@errno' => xmlrpc_errno())), 'error');
 }
@@ -654,7 +664,9 @@ function acquia_agent_network_address($acquia_network_address = NULL) {
 }
 
 /**
- * Helper function to check if an identifer and key exist.
+ * Helper function to check if an identifier and key exist.
+ *
+ * @return boolean
  */
 function acquia_agent_has_credentials() {
   return (bool)(variable_get('acquia_identifier', FALSE) && variable_get('acquia_key', FALSE));
@@ -727,6 +739,11 @@ function acquia_agent_form_system_modules_alter(&$form, &$form_state) {
 
 /**
  * Builds a stream context based on a url and local .pem file if available.
+ *
+ * @param string $url
+ * @param string $module
+ *
+ * @return resource
  */
 function acquia_agent_stream_context_create($url, $module = 'acquia_agent') {
   $opts = array();
@@ -750,14 +767,16 @@ function acquia_agent_stream_context_create($url, $module = 'acquia_agent') {
 /**
  * Determine if a response from Acquia is valid.
  *
- * @param $data The data array returned by acquia_agent_call(). Expected keys:
+ * @param array $data
+ *   The data array returned by acquia_agent_call(). Expected keys:
  *   'authenticator' - request authenticator sent to server
  *   'result' - response from server including keys
  *     'authenticator' - server response authenticator
  *     'body' - server response body
+ * @param string $key
+ *   Acquia subscription key
  *
- * @return
- *   TRUE or FALSE.
+ * @return boolean
  */
 function acquia_agent_valid_response($data, $key = NULL) {
   $authenticator = $data['authenticator'];
@@ -776,6 +795,12 @@ function acquia_agent_valid_response($data, $key = NULL) {
  * Send a XML-RPC request.
  *
  * This function should never be called directly - use acquia_agent_call().
+ *
+ * @param string $url
+ * @param string $method
+ * @param array $data
+ *
+ * @return array|boolean
  */
 function _acquia_agent_request($url, $method, $data) {
   $ctx = acquia_agent_stream_context_create($url);
@@ -802,6 +827,14 @@ function _acquia_agent_request($url, $method, $data) {
 
 /**
  * Creates an authenticator based on xmlrpc params and a HMAC-SHA1.
+ *
+ * @param array $params
+ * @param string $identifier
+ *   Acquia subscription identifier.
+ * @param string $key
+ *   Acquia subscription key.
+ *
+ * @return array
  */
 function _acquia_agent_authenticator($params = array(), $identifier = NULL, $key = NULL) {
   if (empty($identifier)) {
@@ -822,6 +855,13 @@ function _acquia_agent_authenticator($params = array(), $identifier = NULL, $key
 /**
  * Calculates a HMAC-SHA1 according to RFC2104 (http://www.ietf.org/rfc/rfc2104.txt).
  * With addition of xmlrpc params.
+ *
+ * @param string $key
+ * @param int $time
+ * @param string $nonce
+ * @param array $params
+ *
+ * @return string
  */
 function _acquia_agent_hmac($key, $time, $nonce, $params) {
   if (empty($params['rpc_version']) || $params['rpc_version'] < 2) {
@@ -847,8 +887,11 @@ function _acquia_agent_hmac($key, $time, $nonce, $params) {
 /**
  * Creates an authenticator for XML-RPC calls without Network identifier or key.
  *
- * @param array $body array of values being sent to remote server
+ * @param array $body
+ *   array of values being sent to remote server
  * @param string $pass
+ *
+ * @return array
  */
 function _acquia_agent_create_authenticator($body, $pass = NULL) {
   $auth = array();
@@ -863,4 +906,13 @@ function _acquia_agent_create_authenticator($body, $pass = NULL) {
     $auth['hash'] = 'x';
   }
   return $auth;
+}
+
+/**
+ * Returns the $_SERVER superglobal.
+ *
+ * @return array
+ */
+function acquia_agent_get_server_superglobal() {
+  return variable_get('acquia_agent_server_superglobal', $_SERVER);
 }

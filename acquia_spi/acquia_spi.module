@@ -206,7 +206,11 @@ function acquia_spi_valid_request($data, $message) {
 }
 
 /**
- * Send a file's contents to the requestor
+ * Send a file's contents to the requestor.
+ *
+ * @param array $data
+ *
+ * @return bool|string
  */
 function acquia_spi_send_module_data($data = array()) {
   // We only do this if we are on SSL
@@ -858,7 +862,22 @@ function _acquia_spi_security_review_compatible() {
  *   TRUE if site is hosted with Acquia, otherwise FALSE
  */
 function acquia_spi_check_acquia_hosted() {
-  return isset($_SERVER['AH_SITE_ENVIRONMENT'], $_SERVER['AH_SITE_NAME']);
+  $server = acquia_agent_get_server_superglobal();
+
+  return isset($server['AH_SITE_ENVIRONMENT'], $server['AH_SITE_NAME']);
+}
+
+/**
+ * Attempt to determine if this site is running on production environment.
+ *
+ * @return boolean
+ *   TRUE if site is hosted with Acquia and site is on production environment.
+ */
+function acquia_spi_check_prod_env() {
+  $prod_env = array('prod');
+  $server = acquia_agent_get_server_superglobal();
+
+  return acquia_spi_check_acquia_hosted() && in_array($server['AH_SITE_ENVIRONMENT'], $prod_env);
 }
 
 /**
@@ -1756,7 +1775,7 @@ function acquia_spi_get_quantum() {
 /**
  * Check the presence of UID 0 in the users table.
  *
- * @return bool Whether UID 0 is present.
+ * @return boolean Whether UID 0 is present.
  *
  */
 function acquia_spi_uid_0_present() {
@@ -2007,4 +2026,17 @@ function acquia_spi_process_messages($response) {
   }
 
   drupal_set_message(implode('<br/>', $message), $message_type);
+}
+
+/**
+ * Implements hook_flush_caches().
+ */
+function acquia_spi_flush_caches() {
+
+  if (acquia_spi_check_prod_env()) {
+    $server = acquia_agent_get_server_superglobal();
+    watchdog('acquia_spi', 'Flushed cache data on %site', array('%site' => $server['AH_SITE_NAME']), WATCHDOG_INFO);
+  }
+
+  return array();
 }
