@@ -174,8 +174,6 @@ class AcquiaAgentTestCase extends DrupalWebTestCase {
    * Test Agent subscription methods.
    */
   public function testAcquiaAgentSubscription() {
-    // Set a wrapper on drupal_http_request() to record connection request counts.
-    variable_set('drupal_http_request_function', '_acquia_connector_test_http_request_wrapper');
 
     // Starts as inactive.
     $active = acquia_agent_subscription_is_active();
