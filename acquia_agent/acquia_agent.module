@@ -383,7 +383,7 @@ function acquia_agent_update_status_alter(&$projects) {
 
   foreach ($projects as $project => $project_info) {
     if ($project == 'drupal') {
-      if (isset($subscription['update'])) {
+      if (!empty($subscription['update'])) {
         $projects[$project]['status'] = isset($subscription['update']['status']) ? $subscription['update']['status'] : t('Unknown');
         $projects[$project]['releases'] = isset($subscription['update']['releases']) ? $subscription['update']['releases'] : array();
         $projects[$project]['recommended'] = isset($subscription['update']['recommended']) ? $subscription['update']['recommended'] : '';
