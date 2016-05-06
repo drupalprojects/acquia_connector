@@ -114,7 +114,18 @@ function acquia_connector_test_spi_definition($arg_version) {
 }
 
 function acquia_connector_test_upload() {
+  $data = 'invalid request';
+  $response_code = 400;
 
+  if (variable_get('acquia_connector_test_upload_server_to_fail', FALSE)) {
+    $data = '';
+    $response_code = 500;
+  }
+
+  return (object) array(
+    'data' => $data,
+    'code' => $response_code,
+  );
 }
 
 function acquia_connector_test_validate($data) {
