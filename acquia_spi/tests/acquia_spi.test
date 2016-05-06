@@ -9,6 +9,9 @@ class AcquiaSPITestCase extends DrupalWebTestCase {
   protected $credentials_path;
   protected $settings_path;
   protected $status_report_url;
+  protected $acqtest_name         = 'test name';
+  protected $acqtest_machine_name = 'test_name';
+
   // Platform array keys.
   protected $platformKeys = array('php', 'webserver_type', 'webserver_version', 'apache_modules', 'php_extensions', 'php_quantum', 'database_type', 'database_version', 'system_type', 'system_version', 'mysql');
   protected $spiDataKeys = array(
@@ -104,6 +107,19 @@ class AcquiaSPITestCase extends DrupalWebTestCase {
     );
     $submit_button = 'Connect';
     $this->drupalPost($this->credentials_path, $edit_fields, $submit_button);
+
+    // If name and machine name are empty.
+    $this->drupalGet($this->status_report_url);
+    $this->assertText($this->acquiaSPIStrings('spi-not-sent'), 'SPI data was not sent');
+
+    $edit_fields = array(
+      'name' => $this->acqtest_name,
+      'machine_name' => $this->acqtest_machine_name,
+    );
+
+    $submit_button = 'Save settings';
+    $this->drupalPost($this->settings_path, $edit_fields, $submit_button);
+
     // Send SPI data.
     $this->drupalGet($this->status_report_url);
     $this->assertText($this->acquiaSPIStrings('spi-status-text'), 'SPI explanation text exists');
@@ -113,6 +129,14 @@ class AcquiaSPITestCase extends DrupalWebTestCase {
 
     // Connect site on non-error key and id.
     $this->connectSite();
+    $edit_fields = array(
+      'name' => $this->acqtest_name,
+      'machine_name' => $this->acqtest_machine_name,
+    );
+
+    $submit_button = 'Save settings';
+    $this->drupalPost($this->settings_path, $edit_fields, $submit_button);
+
     // Send SPI data.
     $this->drupalGet($this->status_report_url);
     $this->clickLink($this->acquiaSPIStrings('spi-send-text'));
@@ -187,6 +211,14 @@ class AcquiaSPITestCase extends DrupalWebTestCase {
     // Connect site on valid credentials.
     $this->connectSite();
 
+    $edit_fields = array(
+      'name' => $this->acqtest_name,
+      'machine_name' => $this->acqtest_machine_name,
+    );
+
+    $submit_button = 'Save settings';
+    $this->drupalPost($this->settings_path, $edit_fields, $submit_button);
+
     $spi_data = acquia_spi_get();
     // Check that result is an array.
     $result = acquia_spi_send_data($spi_data);
@@ -227,6 +259,13 @@ class AcquiaSPITestCase extends DrupalWebTestCase {
 
   public function testAcquiaSPIMessages() {
     $this->connectSite();
+    $edit_fields = array(
+      'name' => $this->acqtest_name,
+      'machine_name' => $this->acqtest_machine_name,
+    );
+
+    $submit_button = 'Save settings';
+    $this->drupalPost($this->settings_path, $edit_fields, $submit_button);
 
     $spi_data = acquia_spi_get();
     $response = acquia_spi_send_data($spi_data);

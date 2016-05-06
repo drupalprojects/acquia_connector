@@ -135,16 +135,11 @@ function _acquia_migrate_test_migration_setup(&$migration) {
     'User-Agent' => 'Acquia Migrate Client/1.x (Drupal ' . VERSION . ';)',
   );
   $response = drupal_http_request($url, array('headers' => $headers, 'max_redirects' => 0));
-  if ($response->code != 200) {
-    $migration['error'] = t('Unable to connect to migration destination site, please contact Acquia Support.');
+  if ($response->code != 400) {
+    $migration['error'] = t('Unable to connect to migration destination site (unexpected response code: @code), please contact Acquia Support.', array('@code' => $response->code));
     return FALSE;
   }
-  // A 200 response with body 'invalid request' is returned from the AH_UPLOAD
-  // script if receiving a GET request.
-  if (strpos($url, 'AH_UPLOAD') !== FALSE && trim($response->data) != 'invalid request') {
-    $migration['error'] = t('Unable to connect to migration destination site, please contact Acquia Support.');
-    return FALSE;
-  }
+
   return TRUE;
 }
 
