@@ -134,7 +134,15 @@ function _acquia_migrate_test_migration_setup(&$migration) {
   $headers = array(
     'User-Agent' => 'Acquia Migrate Client/1.x (Drupal ' . VERSION . ';)',
   );
-  $response = drupal_http_request($url, array('headers' => $headers, 'max_redirects' => 0));
+
+  $context = stream_context_create(array(
+    'ssl' => array(
+      'verify_peer' => FALSE,
+      'verify_peer_name' => FALSE,
+    ),
+  ));
+
+  $response = drupal_http_request($url, array('headers' => $headers, 'context' => $context, 'max_redirects' => 0));
   if ($response->code != 400) {
     $migration['error'] = t('Unable to connect to migration destination site (unexpected response code: @code), please contact Acquia Support.', array('@code' => $response->code));
     return FALSE;
@@ -461,8 +469,16 @@ function _acquia_migrate_transmit(&$migration, $content) {
   );
   $url = $migration['env']['url'];
 
+  $context = stream_context_create(array(
+    'ssl' => array(
+      'verify_peer' => FALSE,
+      'verify_peer_name' => FALSE,
+    ),
+  ));
+
   $return = drupal_http_request($url, array(
     'headers' => $headers,
+    'context' => $context,
     'method' => 'POST',
     'data' => $data,
     'max_redirects' => 0,
