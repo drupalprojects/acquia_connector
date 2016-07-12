@@ -364,7 +364,7 @@ function _acquia_migrate_archive_site(&$migration) {
       $ret = $gz->addModify(array($migration['db_file']), '', $migration['dir'] . DIRECTORY_SEPARATOR);
     }
     // Remove Drupal root from the file paths, OS dependent.
-    if (defined('OS_WINDOWS')) {
+    if (defined('OS_WINDOWS') && OS_WINDOWS) {
       $remove_dir = DRUPAL_ROOT . '\\';
     }
     else {
@@ -383,7 +383,7 @@ function _acquia_migrate_archive_site(&$migration) {
  */
 function _acquia_migrate_validate_archive_files(&$migration, $files) {
   $output = implode("\n", $files);
-  if (defined('OS_WINDOWS')) {
+  if (defined('OS_WINDOWS') && OS_WINDOWS) {
     $output = str_replace('\\', '/', $output);
   }
   $docroot = preg_quote(DRUPAL_ROOT . '/');
