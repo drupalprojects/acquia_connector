@@ -341,6 +341,56 @@ class AcquiaSPITestCase extends DrupalWebTestCase {
   }
 
   /**
+   * Test that setting multisite option properly modifies a machine name
+   * for Acquia hosted sites.
+   */
+  public function testAcquiaMachineNameMultisite() {
+    // 1. Connect a site.
+    $edit_fields = array(
+      'acquia_identifier' => ACQTEST_ID,
+      'acquia_key' => ACQTEST_KEY,
+    );
+    $submit_button = 'Connect';
+    $this->drupalPost($this->credentials_path, $edit_fields, $submit_button);
+    $this->drupalGet($this->settings_path);
+
+    $elements = $this->xpath('//input[@name=:name]', [':name' => 'multisite_identifier']);
+    $this->assertEqual($elements, [], "Multisite setting does not display for non-Acquia hosted site");
+
+    // 2. Simulate Acquia hosted site.`
+    $server = array(
+      'AH_SITE_NAME'        => 'site_name',
+      'AH_SITE_ENVIRONMENT' => 'dev',
+    );
+
+    variable_set('acquia_agent_server_superglobal', $server);
+
+    // 3. Verify machine name before setting the multisite option.
+    $subscription = acquia_agent_settings('acquia_subscription_data');
+    $subscription['href'] = 'https://insight.acquia.com/node/uuid/0dee0d07_4032_44ea_a2f2_84182dc10d54/dashboard"';
+    $subscription['uuid'] = '0dee0d07_4032_44ea_a2f2_84182dc10d54';
+    variable_set('acquia_subscription_data', $subscription);
+
+    $spi_data = acquia_spi_get();
+    $expected_machine_name = '0dee0d07_4032_44ea_a2f2_84182dc10d54' . '__' . 'site_name';
+    $this->assertIdentical($spi_data['machine_name'], $expected_machine_name, "Machine name does not contain multisite postfix");
+
+    // 4. Verify machine name after setting the multisite option.
+    $edit_fields = array(
+      'is_multisite' => TRUE,
+      'multisite_identifier' => 'my_site1',
+      'machine_multisite_identifier' => 'my_site1',
+    );
+
+    $this->drupalPost($this->settings_path, $edit_fields, 'Save settings');
+
+    $spi_data = acquia_spi_get();
+    $expected_machine_name = '0dee0d07_4032_44ea_a2f2_84182dc10d54' . '__' . 'site_name' . '__' . 'my_site1';
+    $this->assertIdentical($spi_data['machine_name'], $expected_machine_name, "Machine name contains multisite postfix");
+    variable_del('acquia_agent_server_superglobal');
+  }
+
+  /**
    * Test Cache clear detected.
    */
   public function testFlushCaches() {

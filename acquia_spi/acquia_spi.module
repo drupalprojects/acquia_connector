@@ -285,9 +285,46 @@ function acquia_spi_form_acquia_agent_settings_form_alter(&$form) {
     $form['identification']['#description'] = t('Acquia hosted sites are automatically provided with a name and machine name.');
     $form['identification']['site']['name']['#default_value'] = acquia_spi_get_acquia_hosted_name();
     $form['identification']['site']['name']['#disabled'] = TRUE;
+
+    $form['identification']['multisite']['description']['#markup'] = t('This is only relevant if this site is a part of a Drupal <a href="!url">multisite configuration</a>.', array('!url' => url('https://docs.acquia.com/cloud/multi-site')));
+    $form['identification']['multisite']['is_multisite'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Multisite'),
+      '#default_value' => variable_get('acquia_spi_is_multisite'),
+      '#description' => t('Selecting this option allows each site in a multisite to be displayed as a separate record in Acquia Insight.'),
+    );
+
+    $form['identification']['multisite']['multisite_identifier'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Enter the unique identifier for the site'),
+      '#maxlength' => 10,
+      '#default_value' => variable_get('acquia_spi_multisite_identifier'),
+      '#element_validate' => array('_multisite_identifier_validate'),
+      '#states' => array(
+        'visible' => array(
+          ':input[name="is_multisite"]' => array('checked' => TRUE),
+        ),
+        'required' => array(
+          ':input[name="is_multisite"]' => array('checked' => TRUE),
+        ),
+      ),
+    );
+
+    $form['identification']['multisite']['machine_multisite_identifier'] = array(
+      '#type' => 'machine_name',
+      '#maxlength' => 10,
+      '#title' => t('Machine name'),
+      '#required' => FALSE,
+      '#default_value' => variable_get('acquia_spi_machine_multisite_identifier'),
+      '#machine_name' => array(
+        'exists' => 'taxonomy_vocabulary_machine_name_load',
+        'source' => array('identification', 'multisite', 'multisite_identifier'),
+      ),
+    );
   }
   else {
     $form['identification']['site']['name']['#default_value'] = variable_get('acquia_spi_site_name');
+    $form['identification']['multisite']['#access'] = FALSE;
   }
   $form['identification']['site']['machine_name'] = array(
     '#type' => 'machine_name',
@@ -373,6 +410,20 @@ function acquia_spi_form_acquia_agent_settings_form_alter(&$form) {
 }
 
 /**
+ * Validate callback for multisite_identifier field.
+ *
+ * @param $element
+ * @param $form_state
+ */
+function _multisite_identifier_validate($element, &$form_state) {
+
+  if ($form_state['values']['is_multisite'] && empty($element['#value'])) {
+    form_error($element, t('Enter the unique identifier for the site field is required.'));
+  }
+
+}
+
+/**
  * Added submit function for acquia_agent_settings form.
  */
 function acquia_spi_agent_settings_submit($form, &$form_state) {
@@ -392,6 +443,13 @@ function acquia_agent_spi_set_submit($form, &$form_state) {
   variable_set('acquia_spi_send_watchdog', $form_state['values']['send_watchdog']);
   variable_set('acquia_spi_use_cron', $form_state['values']['spi_use_cron']);
   variable_set('acquia_spi_set_variables_override', $form_state['values']['alter_variables']);
+
+  // Set unique identifier for the multisite.
+  if (acquia_spi_check_acquia_hosted()) {
+    variable_set('acquia_spi_is_multisite', $form_state['values']['is_multisite']);
+    variable_set('acquia_spi_multisite_identifier', $form_state['values']['multisite_identifier']);
+    variable_set('acquia_spi_machine_multisite_identifier', $form_state['values']['machine_multisite_identifier']);
+  }
 
   // If the machine name changed, send information so we know if it is a dupe.
   if ($form_state['values']['machine_name'] != variable_get('acquia_spi_site_machine_name', NULL)) {
@@ -1966,7 +2024,13 @@ function acquia_spi_approved_set_variables() {
  *   The suggested Acquia Hosted name.
  */
 function acquia_spi_get_acquia_hosted_name() {
-  return acquia_agent_settings('acquia_subscription_name') . ': ' . $_SERVER['AH_SITE_ENVIRONMENT'];
+  $server = acquia_agent_get_server_superglobal();
+
+  if (acquia_agent_settings('acquia_spi_is_multisite')) {
+    return acquia_agent_settings('acquia_subscription_name') . '__' . acquia_agent_settings('acquia_spi_multisite_identifier') . ': ' . $server['AH_SITE_ENVIRONMENT'];
+  }
+
+  return acquia_agent_settings('acquia_subscription_name') . ': ' . $server['AH_SITE_ENVIRONMENT'];
 }
 
 /**
@@ -1976,9 +2040,16 @@ function acquia_spi_get_acquia_hosted_name() {
  *   The suggested Acquia Hosted machine name.
  */
 function acquia_spi_get_acquia_hosted_machine_name() {
+  $server = acquia_agent_get_server_superglobal();
+
   $sub_data = acquia_agent_settings('acquia_subscription_data');
   $sub_uuid = str_replace('-', '_', _acquia_agent_get_id_from_sub($sub_data));
-  return $sub_uuid . '__' . $_SERVER['AH_SITE_NAME'];
+
+  if (acquia_agent_settings('acquia_spi_is_multisite')) {
+    return $sub_uuid . '__' . $server['AH_SITE_NAME'] . '__' . acquia_agent_settings('acquia_spi_machine_multisite_identifier');
+  }
+
+  return $sub_uuid . '__' . $server['AH_SITE_NAME'];
 }
 
 /**
@@ -2001,6 +2072,7 @@ function acquia_spi_environment_change_detected() {
  *   Response array from NSPI.
  */
 function acquia_spi_process_messages($response) {
+
   if (empty($response)) {
     drupal_set_message(t('Error sending SPI data. Consult the logs for more information.'), 'error');
     return;

@@ -34,6 +34,9 @@ function acquia_spi_uninstall() {
   variable_del('acquia_spi_site_machine_name');
   variable_del('acquia_spi_site_name');
   variable_del('acquia_spi_site_uuid');
+  variable_del('acquia_spi_is_multisite');
+  variable_del('acquia_spi_multisite_identifier');
+  variable_del('acquia_spi_machine_multisite_identifier');
 }
 
 /**

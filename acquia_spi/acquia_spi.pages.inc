@@ -16,6 +16,8 @@ function acquia_spi_environment_change_form($form, &$form_state) {
   $env_changes_list   = theme('item_list', array('items' => $env_changes));
   $off_acquia_hosting = array_key_exists('acquia_hosted', $env_changes) && !acquia_spi_check_acquia_hosted();
 
+  $form_state['storage']['off_acquia_hosting'] = $off_acquia_hosting;
+
   if (!acquia_spi_environment_change_detected() && !$blocked) {
     $form['#prefix'] = t('<h2>No changes detected</h2><p>This form is used to address changes in your site\'s environment. No changes are currently detected.</p>');
     return $form;
@@ -132,6 +134,13 @@ function acquia_spi_environment_change_form_submit($form, &$form_state) {
   if ($form_state['values']['env_change_action'] == 'create') {
     variable_set('acquia_spi_site_name', $form_state['values']['name']);
     variable_set('acquia_spi_site_machine_name', $form_state['values']['machine_name']);
+  }
+
+  // Remove multisite_identifier if not acquia_hosting.
+  if ($form_state['storage']['off_acquia_hosting'] && acquia_agent_settings('acquia_spi_is_multisite')) {
+    variable_del('acquia_spi_is_multisite');
+    variable_del('acquia_spi_multisite_identifier');
+    variable_del('acquia_spi_machine_multisite_identifier');
   }
 
   // Send information as soon as action is requested.

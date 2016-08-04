@@ -704,6 +704,12 @@ function acquia_agent_settings($variable_name) {
       return variable_get('acquia_subscription_data', array('active' => FALSE));
     case 'acquia_subscription_name':
       return variable_get('acquia_subscription_name', '');
+    case 'acquia_spi_is_multisite':
+      return variable_get('acquia_spi_is_multisite');
+    case 'acquia_spi_multisite_identifier':
+      return variable_get('acquia_spi_multisite_identifier');
+    case 'acquia_spi_machine_multisite_identifier':
+      return variable_get('acquia_spi_machine_multisite_identifier');
   }
 }
 
