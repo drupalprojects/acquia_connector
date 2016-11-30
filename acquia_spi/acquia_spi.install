@@ -34,9 +34,6 @@ function acquia_spi_uninstall() {
   variable_del('acquia_spi_site_machine_name');
   variable_del('acquia_spi_site_name');
   variable_del('acquia_spi_site_uuid');
-  variable_del('acquia_spi_is_multisite');
-  variable_del('acquia_spi_multisite_identifier');
-  variable_del('acquia_spi_machine_multisite_identifier');
 }
 
 /**
@@ -171,5 +168,14 @@ function acquia_spi_requirements($phase) {
  */
 function acquia_spi_update_7001() {
   menu_rebuild();
+}
+
+/**
+ * Delete the multisite related settings as it is not currently supported.
+ */
+function acquia_spi_update_7002() {
+  variable_del('acquia_spi_is_multisite');
+  variable_del('acquia_spi_multisite_identifier');
+  variable_del('acquia_spi_machine_multisite_identifier');
 }
 

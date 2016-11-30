@@ -527,19 +527,11 @@ function acquia_agent_settings_form($form, &$form_state, $banner) {
     '#title' => t('Site Identification'),
     '#collapsible' => FALSE,
   );
-
-  $form['identification']['multisite'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Multisite settings'),
-    '#collapsible' => FALSE,
-  );
-
   $form['connection'] = array(
     '#type' => 'fieldset',
     '#title' => t('Acquia Subscription Settings'),
     '#collapsible' => FALSE,
   );
-
   $form['connection']['acquia_dynamic_banner'] = array(
     '#type' => 'checkbox',
     '#title' => t('Receive updates from Acquia Insight'),
