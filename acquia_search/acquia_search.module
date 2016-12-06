@@ -19,7 +19,8 @@ function acquia_search_init() {
 
   // Add apachesolr module connection overrides if applicable.
   $auto_switch_disabled = variable_get('acquia_search_disable_auto_switch', 0);
-  $sub_active = acquia_agent_subscription_is_active();
+  $subscription = acquia_agent_settings('acquia_subscription_data');
+  $sub_active = !empty($subscription['active']);
 
   if (!$auto_switch_disabled && $sub_active && !module_exists('acquia_search_multi_subs')) {
 
@@ -31,8 +32,6 @@ function acquia_search_init() {
     $ah_env = isset($_SERVER['AH_SITE_ENVIRONMENT']) ? $_SERVER['AH_SITE_ENVIRONMENT'] : '';
     $sites_foldername = substr(conf_path(), strrpos(conf_path(), '/') + 1);
     $ah_db_name = isset($conf['acquia_hosting_site_info']['db']['name']) ? $conf['acquia_hosting_site_info']['db']['name'] : '';
-
-    $subscription = acquia_agent_settings('acquia_subscription_data');
 
     $available_cores = acquia_search_available_cores($subscription);
     $environments = apachesolr_load_all_environments();
@@ -193,9 +192,9 @@ function acquia_search_add_form_status_message(&$form, &$form_state, $environmen
  */
 function acquia_search_get_read_only_mode_warning($environment, $t = 't') {
 
-  $msg = $t('To protect your data, Acquia Search module is enforcing 
-    read-only mode, because it could not figure out what Acquia-hosted Solr 
-    index to connect to. This helps you avoid writing to a production index 
+  $msg = $t('To protect your data, Acquia Search module is enforcing
+    read-only mode, because it could not figure out what Acquia-hosted Solr
+    index to connect to. This helps you avoid writing to a production index
     if you copy your site to a development or other environment(s).');
 
   if (!empty($environment['acquia_search_possible_cores'])) {
@@ -205,7 +204,7 @@ function acquia_search_get_read_only_mode_warning($environment, $t = 't') {
     ));
 
     $msg .= '<p>';
-    $msg .= $t('These index IDs would have worked, but could not be found on 
+    $msg .= $t('These index IDs would have worked, but could not be found on
       your Acquia subscription: !list', array('!list' => $list));
     $msg .= '</p>';
 
@@ -315,7 +314,10 @@ function acquia_search_help($path, $arg) {
     case 'admin/config/search/apachesolr':
       $env_id = isset($arg[5]) ? $arg[5] : apachesolr_default_environment();
       $environment = apachesolr_environment_load($env_id);
-      if (acquia_search_environment_connected($environment) && acquia_agent_subscription_is_active()) {
+      $subscription = acquia_agent_settings('acquia_subscription_data');
+      $sub_active = !empty($subscription['active']);
+
+      if (acquia_search_environment_connected($environment) && $sub_active) {
         $as_link = l(t('Acquia Search'), 'http://www.acquia.com/products-services/acquia-search');
         return t("Search is being provided by the !as network service.", array('!as' => $as_link));
       }
@@ -476,7 +478,9 @@ function acquia_search_environment_delete_access($environment) {
  */
 function acquia_search_form_apachesolr_settings_alter(&$form, $form_state) {
   // Don't alter the form if there is no subscription.
-  if (acquia_agent_subscription_is_active()) {
+  $subscription = acquia_agent_settings('acquia_subscription_data');
+  $sub_active = !empty($subscription['active']);
+  if ($sub_active) {
     // Don't show delete operation for the Default AS environment. This means
     // that cloned acquia search environments can be deleted
     foreach ($form['apachesolr_host_settings']['table']['#rows'] as &$row) {
