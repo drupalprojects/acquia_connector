@@ -236,7 +236,11 @@ function acquia_search_get_search_status_message($environment) {
     $items[] = t('Solr index is currently reachable and up.');
   }
   else {
-    $items[] = t('Solr index is currently unreachable.');
+    // Add message with error class.
+    $items[] = array(
+      'data' => t('Solr index is currently unreachable.'),
+      'class' => array('error'),
+    );
   }
 
   // Deep-ping the Solr index to ensure authentication is working.
@@ -244,7 +248,11 @@ function acquia_search_get_search_status_message($environment) {
     $items[] = t('Requests to Solr index are passing authentication checks.');
   }
   else {
-    $items[] = t('Solr core authentication check fails.');
+    // Add message with error class.
+    $items[] = array(
+      'data' => t('Solr core authentication check fails.'),
+      'class' => array('error'),
+    );
   }
 
   return t('Connection managed by Acquia Search module.') . theme('item_list', array('items' => $items));
