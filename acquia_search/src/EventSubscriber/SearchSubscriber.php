@@ -1,9 +1,13 @@
 <?php
 
+/**
+ * @file
+ * Extends the Solarium plugin for the acquia search module.
+ */
+
 namespace Drupal\acquia_search\EventSubscriber;
 
 use Solarium\Core\Client\Response;
-use Solarium\Core\Client\Client;
 use Solarium\Core\Event\Events;
 use Solarium\Core\Event\preExecuteRequest;
 use Solarium\Core\Event\postExecuteRequest;
@@ -20,7 +24,7 @@ class SearchSubscriber extends Plugin {
   /**
    * Solarium client.
    *
-   * @var Client
+   * @var \Solarium\Core\Client\Client;
    */
   protected $client;
 
