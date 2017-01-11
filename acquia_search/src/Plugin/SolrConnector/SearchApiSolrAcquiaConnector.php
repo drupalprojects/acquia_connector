@@ -76,8 +76,9 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
       $configuration['path'] = '/solr/' . $acquia_identifier;
       $configuration['host'] = acquia_search_get_search_host();
       $configuration['port'] = '80';
-      // Flag this server as "should have updates blocked" in getUpdateQuery()
       $override_read_only = \Drupal::config('acquia_search.settings')->get('disable_auto_read_only');
+      // Flag this server as "should have updates blocked" in $this->getUpdateQuery()
+      // @todo: replace with acquia_search_should_we_set_read_only_mode()??
       if (empty($disable_auto_switch) && !$override_read_only) {
         $configuration['overridden_by_acquia_search'] = ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY;
       }
@@ -85,9 +86,19 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
 
     // Add any global Acquia Search connection overrides.
     // These apply to every Search API Server using this Solr connector.
-    // @TODO: make sure the overrides don't make it permanently into the DB!
     $override = \Drupal::config('acquia_search.settings')->get('connection_override');
     if (!empty($override) && is_array($override)) {
+      // Note we are using existing overrides; make sure we don't mark this
+      //   server as "should have updates blocked" in $this->getUpdateQuery().
+      $configuration['overridden_by_acquia_search'] = ACQUIA_SEARCH_EXISTING_OVERRIDE;
+
+      // If 'index_id' is provided, build the path; it will be overridden anyway
+      //   if 'path' is also inside $override.
+      if (!empty($override['index_id'])) {
+        $configuration['path'] = '/solr/' . $override['index_id'];
+      }
+
+      // Merge all of the overrides into the configuration.
       $configuration = array_merge($configuration, $override);
     }
 
@@ -177,8 +188,6 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
 
   /**
    * {@inheritdoc}
-   *
-   * @todo: check if we can move things from theme_ to here?
    */
   public function viewSettings() {
     $uri = Url::fromUri('http://www.acquia.com/products-services/acquia-search', array('absolute' => TRUE));
