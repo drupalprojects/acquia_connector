@@ -169,22 +169,8 @@ class SpiController extends ControllerBase {
       }
     }
 
-    // Database updates required?
-    // Based on code from system.install.
-    $additional_data['pending_updates'] = FALSE;
-    foreach (\Drupal::moduleHandler()->getModuleList() as $module => $filename) {
-      drupal_static_reset('drupal_get_schema_versions');
-      module_load_install($module);
-
-      $updates = drupal_get_schema_versions($module);
-      if ($updates !== FALSE) {
-        $default = drupal_get_installed_schema_version($module);
-        if (max($updates) > $default) {
-          $additional_data['pending_updates'] = TRUE;
-          break;
-        }
-      }
-    }
+    include_once "core/includes/update.inc";
+    $additional_data['pending_updates'] = (bool) update_get_update_list();
 
     if (!empty($additional_data)) {
       // JSON encode this additional data.
