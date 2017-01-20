@@ -170,7 +170,7 @@ class PreferredSearchCoreService {
 
     // For production-only, we allow auto-connecting to the suffix-less core
     // as the fallback.
-    if (isset($_SERVER['AH_PRODUCTION']) || isset($_ENV['AH_PRODUCTION'])) {
+    if (!empty($_SERVER['AH_PRODUCTION']) || !empty($_ENV['AH_PRODUCTION'])) {
       $possible_core_ids[] = $this->acquia_identifier;
     }
 
