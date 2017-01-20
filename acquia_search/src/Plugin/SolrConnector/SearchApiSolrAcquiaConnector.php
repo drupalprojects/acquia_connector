@@ -76,10 +76,8 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
       $configuration['path'] = '/solr/' . $acquia_identifier;
       $configuration['host'] = acquia_search_get_search_host();
       $configuration['port'] = '80';
-      $override_read_only = \Drupal::config('acquia_search.settings')->get('disable_auto_read_only');
       // Flag this server as "should have updates blocked" in $this->getUpdateQuery()
-      // @todo: replace with acquia_search_should_we_set_read_only_mode()??
-      if (empty($disable_auto_switch) && !$override_read_only) {
+      if (acquia_search_should_we_set_read_only_mode(false)) {
         $configuration['overridden_by_acquia_search'] = ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY;
       }
     }
