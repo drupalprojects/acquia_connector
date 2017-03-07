@@ -38,7 +38,7 @@ class AcquiaSearchOverrideTest extends KernelTestBase {
    * Tests to implement:
    *
    * 1. defaultConfiguration returns correct overridden values - Done.
-   * 2. getUpdateQuery throws an exception when the config is overridden - To be done.
+   * 2. getUpdateQuery throws an exception when the config is overridden - Done.
    * 3. Search API server switches to read-only mode - To be done.
    * 4. Search API index switches to read-only mode - To be done.
    */
@@ -54,6 +54,8 @@ class AcquiaSearchOverrideTest extends KernelTestBase {
     $config = $solr_connector->defaultConfiguration();
 
     $this->assertEquals(ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY, $config['overridden_by_acquia_search']);
+
+    $this->_assertGetUpdateQueryException($solr_connector);
 
   }
 
@@ -77,6 +79,8 @@ class AcquiaSearchOverrideTest extends KernelTestBase {
     $this->assertEquals(ACQUIA_SEARCH_OVERRIDE_AUTO_SET, $config['overridden_by_acquia_search']);
     $this->assertEquals('WXYZ-12345.dev.' . $db_name, $config['index_id']);
 
+    $this->_assertGetUpdateQueryNoException($solr_connector);
+
   }
 
   /**
@@ -96,6 +100,8 @@ class AcquiaSearchOverrideTest extends KernelTestBase {
 
     $this->assertEquals(ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY, $config['overridden_by_acquia_search']);
 
+    $this->_assertGetUpdateQueryException($solr_connector);
+
   }
 
   /**
@@ -114,6 +120,8 @@ class AcquiaSearchOverrideTest extends KernelTestBase {
     $config = $solr_connector->defaultConfiguration();
 
     $this->assertEquals(ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY, $config['overridden_by_acquia_search']);
+
+    $this->_assertGetUpdateQueryException($solr_connector);
 
   }
 
@@ -136,6 +144,8 @@ class AcquiaSearchOverrideTest extends KernelTestBase {
 
     $this->assertEquals(ACQUIA_SEARCH_OVERRIDE_AUTO_SET, $config['overridden_by_acquia_search']);
     $this->assertEquals('WXYZ-12345', $config['index_id']);
+
+    $this->_assertGetUpdateQueryNoException($solr_connector);
 
   }
 
@@ -162,6 +172,41 @@ class AcquiaSearchOverrideTest extends KernelTestBase {
 
     $this->assertEquals(ACQUIA_SEARCH_OVERRIDE_AUTO_SET, $config['overridden_by_acquia_search']);
     $this->assertEquals('WXYZ-12345.dev.' . $site_folder, $config['index_id']);
+
+    $this->_assertGetUpdateQueryNoException($solr_connector);
+
+  }
+
+  /**
+   * Asserts if the Solr Connector getUpdateQuery() method throws exception.
+   *
+   * @param \Drupal\acquia_search\Plugin\SolrConnector\SearchApiSolrAcquiaConnector $solr_connector
+   */
+  protected function _assertGetUpdateQueryException($solr_connector) {
+
+    // Set the expectation for exception
+    $this->setExpectedException('Exception',
+      'The Search API Server serving this index is currently in read-only mode.');
+
+    // Run the code that should throw the exception.
+    // If exception occurred - test passes. If no exception occurred - test fails.
+    $solr_connector->getUpdateQuery();
+
+  }
+
+  /**
+   * Asserts if the Solr Connector getUpdateQuery() method does not throw exception.
+   *
+   * @param \Drupal\acquia_search\Plugin\SolrConnector\SearchApiSolrAcquiaConnector $solr_connector
+   */
+  protected function _assertGetUpdateQueryNoException($solr_connector) {
+
+    try {
+      $solr_connector->getUpdateQuery();
+    }
+    catch (Exception $e) {
+      $this->fail('getUpdateQuery() should not throw exception');
+    }
 
   }
 
