@@ -1,4 +1,13 @@
 language: php
 
+php:
+  - 5.6
+
+install:
+  - cd $TRAVIS_BUILD_DIR/..
+  - git clone --depth 1 --branch 8.2.x http://git.drupal.org/project/drupal.git
+  # Restart apache and test it
+  - sudo service apache2 restart
+  - curl -v "http://localhost"
 script:
- - echo "Hello!"
+  - echo "Hello!"
