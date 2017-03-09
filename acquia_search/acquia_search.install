@@ -77,22 +77,27 @@ function acquia_search_requirements($phase) {
     $read_only_warning_shown_flag = false;
     foreach ($servers as $server_id => $server) {
       /** @var \Drupal\search_api\Entity\Server $server */
-      $msg = acquia_search_get_search_status_message($server);
-      $requirements['acquia_search_status_' . $server_id] = [
-        'title' => t('Acquia Search connection status'),
-        'severity' => REQUIREMENT_OK,
-        'description' => ['#markup' => $msg],
-      ];
-
-      // Flag when read-only mode was forced because of not finding the right index.
       $backend_config = $server->getBackendConfig();
-      if (!empty($backend_config['overridden_by_acquia_search']) && $backend_config['overridden_by_acquia_search'] == ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY) {
-        $msg = acquia_search_get_read_only_mode_warning($server);
-        $requirements['acquia_search_read_only'] = [
-          'title' => t('Acquia Search read-only warning'),
-          'severity' => REQUIREMENT_WARNING,
-          'value' => $msg,
+      // Only for servers where the backend is Acquia.
+      if (!empty($backend_config['connector']) && $backend_config['connector'] == 'solr_acquia_connector') {
+
+        $msg = acquia_search_get_search_status_message($server);
+        $requirements['acquia_search_status_' . $server_id] = [
+          'title' => t('Acquia Search connection status'),
+          'severity' => REQUIREMENT_OK,
+          'description' => ['#markup' => $msg],
         ];
+
+        // Flag when read-only mode was forced because of not finding the right index.
+        $backend_config = $server->getBackendConfig();
+        if (!empty($backend_config['overridden_by_acquia_search']) && $backend_config['overridden_by_acquia_search'] == ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY) {
+          $msg = acquia_search_get_read_only_mode_warning($server);
+          $requirements['acquia_search_read_only'] = [
+            'title' => t('Acquia Search read-only warning'),
+            'severity' => REQUIREMENT_WARNING,
+            'value' => $msg,
+          ];
+        }
       }
     }
 
