@@ -46,7 +46,7 @@ before_script:
 
 script:
   - export SIMPLETEST_DB=mysql://root:@localhost/drupal
-  - php core/scripts/run-tests.sh --verbose --color --concurrency 4 --php `which php` --url http://localhost --class 'Drupal\acquia_connector\Tests\AcquiaConnectorSpiTest' | tee /tmp/test.txt ; export TEST_EXIT=${PIPESTATUS[0]} ; echo $TEST_EXIT
+  - php core/scripts/run-tests.sh --verbose --color --concurrency 4 --php `which php` --url http://localhost --module acquia_connector | tee /tmp/test.txt ; export TEST_EXIT=${PIPESTATUS[0]} ; echo $TEST_EXIT
   - TEST_OUTPUT=$(! egrep -i "([1-9]+[0-9]* fails?)|([1-9]+[0-9]* exceptions?)|(fatal)" /tmp/test.txt > /dev/null)$?
   # Add some more info
   - php -i | grep 'php.ini'
