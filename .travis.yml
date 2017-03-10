@@ -15,7 +15,7 @@ mysql:
   encoding: utf8
 
 install:
-  - sudo sed -i.bak "s/max_allowed_packet *= *.*/max_allowed_packet = 128M/g" /etc/mysql/my.cnf
+  - sudo sed -i.bak "s/max_allowed_packet *= *.*/max_allowed_packet = 256M/g" /etc/mysql/my.cnf
   - sudo sed -i.bak "s/wait_timeout *= *.*/wait_timeout = 68800/g" /etc/mysql/my.cnf
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - composer self-update
