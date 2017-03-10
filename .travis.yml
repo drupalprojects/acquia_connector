@@ -41,7 +41,7 @@ before_script:
   - cp -r ../acquia-connector modules/
   - drush en --yes acquia_connector
   - drush cr
-  - sudo service apache2 restart
+  - sudo service mysql restart
 
 
 script:
