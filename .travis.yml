@@ -13,6 +13,11 @@ install:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - composer global require drush/drush:dev-master --prefer-source
   - sudo apt-get install apache2 libapache2-mod-fastcgi
+  - sudo cp ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf.default ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf
+  - sudo a2enmod rewrite actions fastcgi alias
+  - echo "cgi.fix_pathinfo = 1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - ~/.phpenv/versions/$(phpenv version-name)/sbin/php-fpm
+  - echo "$(curl -fsSL https://gist.githubusercontent.com/nickveenhof/11386315/raw/b8abaf9304fe12b5cc7752d39c29c1edae8ac2e6/gistfile1.txt)" | sed -e "s,PATH,$TRAVIS_BUILD_DIR/../drupal,g" | sudo tee /etc/apache2/sites-available/default > /dev/null
   - sudo service apache2 restart
   - cd $TRAVIS_BUILD_DIR/..
   - git clone --depth 1 --branch 8.2.x http://git.drupal.org/project/drupal.git
@@ -20,8 +25,22 @@ install:
 
 before_script:
   - cd $TRAVIS_BUILD_DIR/../drupal
+  - composer install
   - drush -v site-install standard --db-url=mysql://root:@localhost/drupal --yes
   - drush en --yes simpletest
+  - composer config repositories.drupal composer https://packages.drupal.org/8
+  - composer require drupal/search_api_solr:1.0-alpha3
+  - cp -r ../acquia-connector modules/
+  - drush en --yes acquia_connector
+
 
 script:
-  - echo "Hello!"
+  - php core/scripts/run-tests.sh --verbose --color --concurrency 4 --php `which php` --url http://localhost --module acquia_connector | tee /tmp/test.txt ; export TEST_EXIT=${PIPESTATUS[0]} ; echo $TEST_EXIT
+  - TEST_OUTPUT=$(! egrep -i "([1-9]+[0-9]* fails?)|([1-9]+[0-9]* exceptions?)|(fatal)" /tmp/test.txt > /dev/null)$?
+  # Add some more info
+  - php -i | grep 'php.ini'
+  - sudo cat /var/log/apache2/error.log
+  # Exit the build
+  - echo $TEST_EXIT
+  - echo $TEST_OUTPUT
+  - if [ $TEST_EXIT -eq 0 ] && [ $TEST_OUTPUT -eq 0 ]; then exit 0; else exit 1; fi
