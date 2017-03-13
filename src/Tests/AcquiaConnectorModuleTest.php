@@ -155,10 +155,17 @@ class AcquiaConnectorModuleTest extends WebTestBase {
     }
   }
 
+  public function testAll() {
+    $this->_testAcquiaConnectorGetConnected();
+    $this->_testAcquiaConnectorSubscription();
+    $this->_testAcquiaConnectorCloudMigrate();
+    $this->_testAcquiaConnectorSiteStatus();
+  }
+
   /**
    * Test get connected.
    */
-  public function testAcquiaConnectorGetConnected() {
+  public function _testAcquiaConnectorGetConnected() {
     // Check for call to get connected.
     $this->drupalGet('admin');
     $this->assertText($this->acquiaConnectorStrings('free'), 'The explanation of services text exists');
@@ -249,12 +256,28 @@ class AcquiaConnectorModuleTest extends WebTestBase {
     foreach ($elements as $element) {
       $this->assertIdentical((string) $element['disabled'], 'disabled', 'Name field is disabled.');
     }
+
+    \Drupal::configFactory()->getEditable('acquia_connector.settings')
+      ->clear('subscription_data')
+      ->set('subscription_data', ['active' => FALSE])
+      ->save();
+
+    \Drupal::configFactory()->getEditable('acquia_connector.settings')
+      ->clear('identifier')
+      ->save();
+
+    \Drupal::configFactory()->getEditable('acquia_connector.settings')
+      ->clear('key')
+      ->save();
+
+    \Drupal::state()->set('acquia_connector_test_request_count', 0);
+
   }
 
   /**
    * Test Connector subscription methods.
    */
-  public function testAcquiaConnectorSubscription() {
+  public function _testAcquiaConnectorSubscription() {
     // Starts as inactive.
     $is_active = Subscription::isActive();
     $this->assertFalse($is_active, 'Subscription is not currently active.');
@@ -358,7 +381,7 @@ class AcquiaConnectorModuleTest extends WebTestBase {
   /**
    * Test Migrate methods.
    */
-  public function testAcquiaConnectorCloudMigrate() {
+  public function _testAcquiaConnectorCloudMigrate() {
     // Connect site on pair that will trigger an error for migration.
     $edit_fields = [
       'acquia_identifier' => $this->acqtestErrorId,
@@ -408,7 +431,7 @@ class AcquiaConnectorModuleTest extends WebTestBase {
   /**
    * Tests the site status callback.
    */
-  public function testAcquiaConnectorSiteStatus() {
+  public function _testAcquiaConnectorSiteStatus() {
     $uuid = '0dee0d07-4032-44ea-a2f2-84182dc10d54';
     $test_url = "https://insight.acquia.com/node/uuid/{$uuid}/dashboard";
     $test_data = [
@@ -443,7 +466,7 @@ class AcquiaConnectorModuleTest extends WebTestBase {
   /**
    * Tests the SPI change form.
    */
-  public function testSpiChangeForm() {
+  public function _testSpiChangeForm() {
     // Connect site on key and id.
     $edit_fields = [
       'acquia_identifier' => $this->acqtestId,
