@@ -20,6 +20,7 @@ install:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - composer self-update
   - composer global require drush/drush:dev-master --prefer-source
+  - composer global require "hirak/prestissimo:^0.3"
   - sudo apt-get install apache2 libapache2-mod-fastcgi
   - sudo cp ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf.default ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf
   - sudo a2enmod rewrite actions fastcgi alias
