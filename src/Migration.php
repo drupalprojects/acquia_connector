@@ -437,7 +437,10 @@ class Migration {
       $gz = new ArchiveTar($dest_file, $migration['compression_ext'] ? $migration['compression_ext'] : NULL);
       if (!empty($migration['db_file'])) {
         // Add db file.
-        $gz->addModify(array($migration['db_file']), '', $migration['dir'] . DIRECTORY_SEPARATOR);
+        try {
+          $gz->addModify(array($migration['db_file']), '', $migration['dir'] . DIRECTORY_SEPARATOR);
+        }
+        catch(\Exception $e) {}
       }
       // Remove Drupal root from the file paths, OS dependent.
       if (defined('OS_WINDOWS') && OS_WINDOWS) {
@@ -446,7 +449,10 @@ class Migration {
       else {
         $remove_dir = DRUPAL_ROOT . '/';
       }
-      $gz->addModify($files, '', $remove_dir);
+      try {
+        $gz->addModify($files, '', $remove_dir);
+      }
+      catch(\Exception $e) {}
       $migration['tar_file'] = $dest_file;
     }
     else {
