@@ -555,18 +555,13 @@ class AcquiaConnectorModuleTest extends WebTestBase {
    * Clear the connection data thus simulating a disconnected site.
    */
   protected function disconnectSite() {
-    \Drupal::configFactory()->getEditable('acquia_connector.settings')
-      ->clear('subscription_data')
-      ->set('subscription_data', ['active' => FALSE])
-      ->save();
+    $config = \Drupal::configFactory()->getEditable('acquia_connector.settings');
+    $config->clear('subscription_data') ->set('subscription_data', ['active' => FALSE]);
 
-    \Drupal::configFactory()->getEditable('acquia_connector.settings')
-      ->clear('identifier')
-      ->save();
+    $config->clear('identifier');
+    $config->clear('key');
 
-    \Drupal::configFactory()->getEditable('acquia_connector.settings')
-      ->clear('key')
-      ->save();
+    $config->save();
 
     \Drupal::state()->set('acquia_connector_test_request_count', 0);
   }

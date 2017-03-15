@@ -440,7 +440,11 @@ class Migration {
         try {
           $gz->addModify(array($migration['db_file']), '', $migration['dir'] . DIRECTORY_SEPARATOR);
         }
-        catch(\Exception $e) {}
+        catch (\Exception $e) {
+          \Drupal::logger('acquia-migrate')->error('Failed to add file @file to the archive.', array(
+            '@file' => array($migration['db_file'])
+          ));
+        }
       }
       // Remove Drupal root from the file paths, OS dependent.
       if (defined('OS_WINDOWS') && OS_WINDOWS) {
@@ -452,7 +456,9 @@ class Migration {
       try {
         $gz->addModify($files, '', $remove_dir);
       }
-      catch(\Exception $e) {}
+      catch (\Exception $e) {
+        \Drupal::logger('acquia-migrate')->error('Failed to add files to the archive.');
+      }
       $migration['tar_file'] = $dest_file;
     }
     else {

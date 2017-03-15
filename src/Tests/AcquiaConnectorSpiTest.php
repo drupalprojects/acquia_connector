@@ -564,6 +564,7 @@ class AcquiaConnectorSpiTest extends WebTestBase {
         return TRUE;
       }
     }
+    return FALSE;
   }
 
   /**
