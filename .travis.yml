@@ -19,6 +19,7 @@ install:
   - sudo sed -i.bak "s/wait_timeout *= *.*/wait_timeout = 68800/g" /etc/mysql/my.cnf
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - composer self-update
+  # prestissimo allows composer to install packages in parallel.
   - composer global require "hirak/prestissimo:^0.3"
   - composer global require drush/drush:dev-master --prefer-source
   - sudo apt-get install apache2 libapache2-mod-fastcgi
@@ -26,7 +27,7 @@ install:
   - sudo a2enmod rewrite actions fastcgi alias
   - echo "cgi.fix_pathinfo = 1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - ~/.phpenv/versions/$(phpenv version-name)/sbin/php-fpm
-  - echo "$(curl -fsSL https://gist.githubusercontent.com/nickveenhof/11386315/raw/b8abaf9304fe12b5cc7752d39c29c1edae8ac2e6/gistfile1.txt)" | sed -e "s,PATH,$TRAVIS_BUILD_DIR/../drupal,g" | sudo tee /etc/apache2/sites-available/default > /dev/null
+  - sed -e "s,PATH,$TRAVIS_BUILD_DIR/docroot,g" ../acquia-connector/scripts/travis/vhost.txt | sudo tee /etc/apache2/sites-available/default > /dev/null
   - sudo service apache2 restart
   - cd $TRAVIS_BUILD_DIR/..
   - git clone --depth 1 --branch 8.2.x http://git.drupal.org/project/drupal.git
