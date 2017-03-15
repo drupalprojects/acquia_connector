@@ -257,7 +257,7 @@ class AcquiaConnectorModuleTest extends WebTestBase {
       $this->assertIdentical((string) $element['disabled'], 'disabled', 'Name field is disabled.');
     }
 
-    $this->disConnectSite();
+    $this->disconnectSite();
 
   }
 
@@ -554,7 +554,7 @@ class AcquiaConnectorModuleTest extends WebTestBase {
   /**
    * Clear the connection data thus simulating a disconnected site.
    */
-  protected function disConnectSite() {
+  protected function disconnectSite() {
     \Drupal::configFactory()->getEditable('acquia_connector.settings')
       ->clear('subscription_data')
       ->set('subscription_data', ['active' => FALSE])
