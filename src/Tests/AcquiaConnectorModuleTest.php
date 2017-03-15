@@ -257,20 +257,7 @@ class AcquiaConnectorModuleTest extends WebTestBase {
       $this->assertIdentical((string) $element['disabled'], 'disabled', 'Name field is disabled.');
     }
 
-    \Drupal::configFactory()->getEditable('acquia_connector.settings')
-      ->clear('subscription_data')
-      ->set('subscription_data', ['active' => FALSE])
-      ->save();
-
-    \Drupal::configFactory()->getEditable('acquia_connector.settings')
-      ->clear('identifier')
-      ->save();
-
-    \Drupal::configFactory()->getEditable('acquia_connector.settings')
-      ->clear('key')
-      ->save();
-
-    \Drupal::state()->set('acquia_connector_test_request_count', 0);
+    $this->disConnectSite();
 
   }
 
@@ -562,6 +549,26 @@ class AcquiaConnectorModuleTest extends WebTestBase {
     $submit_button = 'Save configuration';
     $this->drupalPostForm($this->environmentChangePath, $edit_fields, $submit_button);
     $this->assertText($this->acquiaConnectorStrings('first-connection'), 'First connection from this site');
+  }
+
+  /**
+   * Clear the connection data thus simulating a disconnected site.
+   */
+  protected function disConnectSite() {
+    \Drupal::configFactory()->getEditable('acquia_connector.settings')
+      ->clear('subscription_data')
+      ->set('subscription_data', ['active' => FALSE])
+      ->save();
+
+    \Drupal::configFactory()->getEditable('acquia_connector.settings')
+      ->clear('identifier')
+      ->save();
+
+    \Drupal::configFactory()->getEditable('acquia_connector.settings')
+      ->clear('key')
+      ->save();
+
+    \Drupal::state()->set('acquia_connector_test_request_count', 0);
   }
 
 }
