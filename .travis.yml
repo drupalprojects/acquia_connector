@@ -54,7 +54,7 @@ before_script:
   - drush en --yes simpletest
 
   # Copy over the Acquia Connector repo and enable it.
-  - cp -r ../acquia-connector modules/
+  - cp -r ../acquia-connector site/all/modules/
   - drush en --yes acquia_agent acquia_spi acquia_search
   - drush cc all
 
