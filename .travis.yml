@@ -63,7 +63,7 @@ script:
   - export SIMPLETEST_DB=mysql://root:@localhost/drupal
 
   # Run the tests!
-  - php core/scripts/run-tests.sh --verbose --color --php `which php` --url http://localhost --class AcquiaAgentTestCase | tee /tmp/test.txt ; export TEST_EXIT=${PIPESTATUS[0]} ; echo $TEST_EXIT
+  - php scripts/run-tests.sh --verbose --color --php `which php` --url http://localhost --class AcquiaAgentTestCase | tee /tmp/test.txt ; export TEST_EXIT=${PIPESTATUS[0]} ; echo $TEST_EXIT
 
   # Output the result and exit.
   - TEST_OUTPUT=$(! egrep -i "([1-9]+[0-9]* fails?)|([1-9]+[0-9]* exceptions?)|(fatal)" /tmp/test.txt > /dev/null)$?
