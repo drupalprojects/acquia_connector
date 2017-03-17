@@ -52,7 +52,6 @@ class AcquiaConnectorModuleTest extends WebTestBase {
     'toolbar',
     'acquia_connector_test',
     'node',
-
   ];
 
   /**
