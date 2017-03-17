@@ -42,7 +42,7 @@ install:
   - echo "error_log=syslog" >> `php --ini | grep "Loaded Configuration" | awk '{print $4}'`
 
 before_script:
-  # Download all composer dependencies and install Drupal site.
+  # Install Drupal site and enabled modules.
   - cd $TRAVIS_BUILD_DIR/../drupal
   - drush -v site-install testing --db-url=mysql://root:@localhost/drupal --yes
   - drush en --yes apachesolr
