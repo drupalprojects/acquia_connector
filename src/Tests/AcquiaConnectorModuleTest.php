@@ -8,6 +8,7 @@
 namespace Drupal\acquia_connector\Tests;
 
 use Drupal\simpletest\WebTestBase;
+use Drupal\acquia_connector\Helper\Storage;
 use Drupal\acquia_connector\Subscription;
 use Drupal\acquia_connector\Controller\StatusController;
 
@@ -211,9 +212,10 @@ class AcquiaConnectorModuleTest extends WebTestBase {
     $this->assertText($this->acquiaConnectorStrings('subscription'), 'Subscription connected with key and identifier');
     $this->assertLinkByHref($this->setupPath, 0, 'Link to change subscription exists');
     $this->assertText($this->acquiaConnectorStrings('migrate'), 'Acquia Cloud Migrate description exists');
+
+    $this->disconnectSite();
+
     // Connect via automatic setup.
-    \Drupal::configFactory()->getEditable('acquia_connector.settings')->clear('identifier')->save();
-    \Drupal::configFactory()->getEditable('acquia_connector.settings')->clear('key')->save();
     $edit_fields = [
       'email' => $this->acqtestEmail,
       'pass' => $this->acqtestPass,
@@ -250,7 +252,6 @@ class AcquiaConnectorModuleTest extends WebTestBase {
       'required' => TRUE,
     ];
     $this->writeSettings($settings);
-    sleep(10);
     $this->drupalGet($this->settingsPath);
     $elements = $this->xpath('//input[@name=:name]', [':name' => 'name']);
     foreach ($elements as $element) {
@@ -556,14 +557,14 @@ class AcquiaConnectorModuleTest extends WebTestBase {
    */
   protected function disconnectSite() {
     $config = \Drupal::configFactory()->getEditable('acquia_connector.settings');
-    $config->clear('subscription_data') ->set('subscription_data', ['active' => FALSE]);
-
-    $config->clear('identifier');
-    $config->clear('key');
-
+    $config->clear('subscription_data')->set('subscription_data', ['active' => FALSE]);
     $config->save();
 
+    Storage::setKey('');
+    Storage::setIdentifier('');
+
     \Drupal::state()->set('acquia_connector_test_request_count', 0);
+    \Drupal::state()->resetCache();
   }
 
 }

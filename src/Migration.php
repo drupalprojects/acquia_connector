@@ -2,6 +2,7 @@
 
 namespace Drupal\acquia_connector;
 
+use Drupal\acquia_connector\Helper\Storage;
 use Drupal\Core\Archiver\ArchiveTar;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Url;
@@ -170,9 +171,8 @@ class Migration {
    * Complete migration tasks.
    */
   public function complete(&$migration) {
-    $config = \Drupal::config('acquia_connector.settings');
-    $identifier = $config->get('identifier');
-    $key = $config->get('key');
+    $identifier = Storage::getIdentifier();
+    $key = Storage::getKey();
     $client = \Drupal::service('acquia_connector.client');
     $body = array('identifier' => $identifier);
     if (isset($migration['redirect']) && is_array($migration['redirect']['data'])) {

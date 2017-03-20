@@ -299,7 +299,6 @@ class AcquiaConnectorSpiTest extends WebTestBase {
     ];
 
     $this->writeSettings($settings);
-    sleep(10);
 
     $this->drupalGet($this->settingsPath);
     $submit_button = 'Save configuration';
@@ -336,7 +335,6 @@ class AcquiaConnectorSpiTest extends WebTestBase {
     ];
 
     $this->writeSettings($settings);
-    sleep(10);
 
     $this->drupalGet($this->settingsPath);
 

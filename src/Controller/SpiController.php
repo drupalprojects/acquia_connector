@@ -2,6 +2,7 @@
 
 namespace Drupal\acquia_connector\Controller;
 
+use Drupal\acquia_connector\Helper\Storage;
 use Drupal\Core\Database\Database;
 use Drupal\Core\DrupalKernel;
 use Drupal\Component\Utility\Unicode;
@@ -1218,7 +1219,6 @@ class SpiController extends ControllerBase {
    */
   public function sendFullSpi($method = '') {
     $spi = self::get($method);
-    $config = $this->config('acquia_connector.settings');
 
     if ($this->checkEnvironmentChange()) {
       \Drupal::logger('acquia spi')->error('SPI data not sent, site environment change detected.');
@@ -1228,7 +1228,7 @@ class SpiController extends ControllerBase {
       return FALSE;
     }
 
-    $response = $this->client->sendNspi($config->get('identifier'), $config->get('key'), $spi);
+    $response = $this->client->sendNspi(Storage::getIdentifier(), Storage::getKey(), $spi);
 
     if ($response === FALSE) {
       return FALSE;
@@ -1467,7 +1467,7 @@ class SpiController extends ControllerBase {
    */
   public function sendAccess() {
     $request = \Drupal::request();
-    $acquia_key = $this->config('acquia_connector.settings')->get('key');
+    $acquia_key = Storage::getKey();
     if (!empty($acquia_key) && $request->get('key')) {
       $key = sha1(\Drupal::service('private_key')->get());
       if ($key === $request->get('key')) {
