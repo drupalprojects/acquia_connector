@@ -32,18 +32,18 @@ install:
   - sudo a2enmod rewrite actions fastcgi alias
   - echo "cgi.fix_pathinfo = 1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - ~/.phpenv/versions/$(phpenv version-name)/sbin/php-fpm
-  - sed -e "s,PATH,$TRAVIS_BUILD_DIR/../drupal,g" $TRAVIS_BUILD_DIR/../acquia-connector/scripts/travis/vhost.txt | sudo tee /etc/apache2/sites-available/default > /dev/null
+  - sed -e "s,PATH,$TRAVIS_BUILD_DIR/../drupal,g" "$TRAVIS_BUILD_DIR/../acquia-connector/scripts/travis/vhost.txt" | sudo tee /etc/apache2/sites-available/default > /dev/null
   - sudo service apache2 restart
 
   # Download Drupal.
-  - cd $TRAVIS_BUILD_DIR/..
+  - cd "$TRAVIS_BUILD_DIR/.."
   - git clone --depth 1 --branch 7.x http://git.drupal.org/project/drupal.git
 
   - echo "error_log=syslog" >> `php --ini | grep "Loaded Configuration" | awk '{print $4}'`
 
 before_script:
   # Install Drupal site and enabled modules.
-  - cd $TRAVIS_BUILD_DIR/../drupal
+  - cd "$TRAVIS_BUILD_DIR/../drupal"
   - drush -v site-install testing --db-url=mysql://root:@localhost/drupal --yes
   - drush en --yes apachesolr
   - drush en --yes simpletest
