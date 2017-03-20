@@ -252,6 +252,7 @@ class AcquiaConnectorModuleTest extends WebTestBase {
       'required' => TRUE,
     ];
     $this->writeSettings($settings);
+    sleep(10);
     $this->drupalGet($this->settingsPath);
     $elements = $this->xpath('//input[@name=:name]', [':name' => 'name']);
     foreach ($elements as $element) {
