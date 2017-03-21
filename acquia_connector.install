@@ -5,10 +5,10 @@
  * Install, update, and uninstall functions for the Acquia Connector module.
  */
 
-use Drupal\Core\Url;
 use Drupal\acquia_connector\Helper\Storage;
 use Drupal\acquia_connector\Controller\TestStatusController;
 use Drupal\acquia_connector\Subscription;
+use Drupal\Core\Url;
 
 /**
  * Implements hook_requirements().
