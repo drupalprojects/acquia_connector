@@ -7,6 +7,7 @@
 
 namespace Drupal\acquia_search\EventSubscriber;
 
+use Drupal\acquia_connector\Helper\Storage;
 use Solarium\Core\Client\Response;
 use Solarium\Core\Event\Events;
 use Solarium\Core\Event\preExecuteRequest;
@@ -197,7 +198,7 @@ class SearchSubscriber extends Plugin {
       }
 
       $acquia_index_id = $server->getOption('index_id');
-      $key = \Drupal::config('acquia_connector.settings')->get('key');
+      $key = Storage::getKey();
 
       // See if we need to overwrite these values.
       // @todo: Implement the derived key per solr environment storage.
