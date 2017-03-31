@@ -7,6 +7,7 @@
 
 namespace Drupal\acquia_search\Plugin\SolrConnector;
 
+use Drupal\acquia_connector\Helper\Storage;
 use Drupal\Core\Url;
 use Drupal\search_api_solr\SolrConnector\SolrConnectorPluginBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -71,7 +72,7 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
       //
       // No proper search core found, therefore we fall back to the one named
       //   the same as the acquia_identifier.
-      $acquia_identifier = \Drupal::config('acquia_connector.settings')->get('identifier');
+      $acquia_identifier = Storage::getIdentifier();
       $configuration['index_id'] = $acquia_identifier;
       $configuration['path'] = '/solr/' . $acquia_identifier;
       $configuration['host'] = acquia_search_get_search_host();

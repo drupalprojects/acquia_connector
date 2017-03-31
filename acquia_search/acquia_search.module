@@ -5,6 +5,7 @@
  * Integration between Acquia Drupal and Acquia's hosted solr search service.
  */
 
+use Drupal\acquia_connector\Helper\Storage;
 use Drupal\search_api\Entity\Server;
 use Drupal\search_api\Entity\Index;
 use Drupal\Core\Entity\EntityInterface;
@@ -469,7 +470,7 @@ function acquia_search_get_core_service($reset = false) {
     return $core_service;
   }
 
-  $acquia_identifier = \Drupal::config('acquia_connector.settings')->get('identifier');
+  $acquia_identifier = Storage::getIdentifier();
   $ah_env = isset($_ENV['AH_SITE_ENVIRONMENT']) ? $_ENV['AH_SITE_ENVIRONMENT'] : '';
   $ah_site_name = isset($_ENV['AH_SITE_NAME']) ? $_ENV['AH_SITE_NAME'] : '';
   $ah_site_group = isset($_ENV['AH_SITE_GROUP']) ? $_ENV['AH_SITE_GROUP'] : '';
