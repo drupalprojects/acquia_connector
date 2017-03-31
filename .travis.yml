@@ -21,7 +21,6 @@ install:
   - sudo service mysql restart
 
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
-  - composer self-update
 
   # prestissimo allows composer to install packages in parallel.
   - composer global require "hirak/prestissimo:^0.3"
@@ -62,7 +61,9 @@ script:
   - export SIMPLETEST_DB=mysql://root:@localhost/drupal
 
   # Run the tests!
-  - php core/scripts/run-tests.sh --verbose --color --php `which php` --url http://localhost 'Acquia connector,Acquia search' | tee /tmp/test.txt ; export TEST_EXIT=${PIPESTATUS[0]} ; echo $TEST_EXIT
+  - php core/scripts/run-tests.sh --verbose --color --php `which php` --url http://localhost 'Acquia connector,Acquia search' | tee /tmp/test.txt
+  - export TEST_EXIT=${PIPESTATUS[0]}
+  - echo $TEST_EXIT
 
   # Output the result and exit.
   - TEST_OUTPUT=$(! egrep -i "([1-9]+[0-9]* fails?)|([1-9]+[0-9]* exceptions?)|(fatal)" /tmp/test.txt > /dev/null)$?
