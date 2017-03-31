@@ -53,7 +53,7 @@ before_script:
 
   # Copy over the Acquia Connector repo and enable it.
   - cp -r ../acquia-connector modules/
-  - drush en --yes acquia_connector acquia_search
+  - drush en --yes acquia_connector
   - drush cr
 
 script:
