@@ -7,6 +7,7 @@
 
 namespace Drupal\Tests\acquia_search\Unit;
 
+use Drupal\acquia_connector\Helper\Storage;
 use Drupal\acquia_search\Plugin\SolrConnector\SearchApiSolrAcquiaConnector;
 use \Drupal\KernelTests\KernelTestBase;
 
@@ -224,9 +225,6 @@ class AcquiaSearchOverrideTest extends KernelTestBase {
     $site_folder = $this->_getSiteFolderName();
     $ah_db_name = $this->_getDbName();
 
-    $config = \Drupal::configFactory()->getEditable('acquia_connector.settings');
-    $config->set('identifier', $acquia_identifier)->save();
-
     $core_with_folder_name = array(
       'balancer' => $solr_hostname,
       'core_id' => "{$acquia_identifier}.dev.{$site_folder}"
@@ -256,9 +254,13 @@ class AcquiaSearchOverrideTest extends KernelTestBase {
       );
     }
 
-    $config->set('subscription_data', array(
-      'heartbeat_data' => array('search_cores' => $available_cores)
-    ))->save();
+    Storage::setIdentifier($acquia_identifier);
+
+    \Drupal::configFactory()->getEditable('acquia_connector.settings')
+      ->set('subscription_data', array(
+        'heartbeat_data' => array('search_cores' => $available_cores)
+      ))
+      ->save();
 
   }
 
