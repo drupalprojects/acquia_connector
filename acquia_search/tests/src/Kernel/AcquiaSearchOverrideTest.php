@@ -5,11 +5,11 @@
  * Contains Drupal\Tests\acquia_search\Unit\AcquiaSearchTest.
  */
 
-namespace Drupal\Tests\acquia_search\Unit;
+namespace Drupal\Tests\acquia_search\Kernel;
 
 use Drupal\acquia_connector\Helper\Storage;
 use Drupal\acquia_search\Plugin\SolrConnector\SearchApiSolrAcquiaConnector;
-use \Drupal\KernelTests\KernelTestBase;
+use Drupal\KernelTests\KernelTestBase;
 
 /**
  *
