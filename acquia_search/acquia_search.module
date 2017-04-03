@@ -208,52 +208,52 @@ function acquia_search_search_api_server_load($entities) {
   }
 }
 
-///**
-// * Implements hook_search_api_index_load().
-// *
-// * This takes care of marking indexes as read-only mode under the right
-// * conditions (@see acquia_search_search_api_server_load()).
-// *
-// * @param \Drupal\search_api\Entity\Index[] $entities
-// *   Array of Search API index entities.
-// */
-//function acquia_search_search_api_index_load($entities) {
-//  // Loop through the Index entities.
-//  foreach ($entities as &$index) {
-//    /** @var \Drupal\search_api\Entity\Index $index */
-//
-//    // Reset the overridden_by_acquia_search option.
-//    $options = $index->getOptions();
-//    if (!empty($options['overridden_by_acquia_search'])) {
-//      unset($options['overridden_by_acquia_search']);
-//      $index->setOptions($options);
-//    }
-//
-//    // Look at the server settings to determine what to do.
-//    if ($index->getServerId()) {
-//      // Load server.
-//      /** @var \Drupal\search_api\Entity\Server $server */
-//      $server = Server::load($index->getServerId());
-//      if ($server) {
-//        // We will look at the backend config to see what actions to take, since
-//        //   that has already been flagged by acquia_search_search_api_server_load()
-//        // @todo: replace with acquia_search_should_we_set_read_only_mode()
-//        $backend_config = $server->getBackendConfig();
-//        if (
-//          !empty($backend_config['connector'])
-//          && $backend_config['connector'] == 'solr_acquia_connector'
-//          && isset($backend_config['overridden_by_acquia_search'])
-//          && $backend_config['overridden_by_acquia_search'] == ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY
-//        ) {
-//          // Set this index to read-only mode.
-//          $index->set('read_only', TRUE);
-//          // Flag this index as having been altered by this module.
-//          $index->setOption('overridden_by_acquia_search', ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY);
-//        }
-//      }
-//    }
-//  }
-//}
+/**
+ * Implements hook_search_api_index_load().
+ *
+ * This takes care of marking indexes as read-only mode under the right
+ * conditions (@see acquia_search_search_api_server_load()).
+ *
+ * @param \Drupal\search_api\Entity\Index[] $entities
+ *   Array of Search API index entities.
+ */
+function acquia_search_search_api_index_load($entities) {
+  // Loop through the Index entities.
+  foreach ($entities as &$index) {
+    /** @var \Drupal\search_api\Entity\Index $index */
+
+    // Reset the overridden_by_acquia_search option.
+    $options = $index->getOptions();
+    if (!empty($options['overridden_by_acquia_search'])) {
+      unset($options['overridden_by_acquia_search']);
+      $index->setOptions($options);
+    }
+
+    // Look at the server settings to determine what to do.
+    if ($index->getServerId()) {
+      // Load server.
+      /** @var \Drupal\search_api\Entity\Server $server */
+      $server = Server::load($index->getServerId());
+      if ($server) {
+        // We will look at the backend config to see what actions to take, since
+        //   that has already been flagged by acquia_search_search_api_server_load()
+        // @todo: replace with acquia_search_should_we_set_read_only_mode()
+        $backend_config = $server->getBackendConfig();
+        if (
+          !empty($backend_config['connector'])
+          && $backend_config['connector'] == 'solr_acquia_connector'
+          && isset($backend_config['overridden_by_acquia_search'])
+          && $backend_config['overridden_by_acquia_search'] == ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY
+        ) {
+          // Set this index to read-only mode.
+          $index->set('read_only', TRUE);
+          // Flag this index as having been altered by this module.
+          $index->setOption('overridden_by_acquia_search', ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY);
+        }
+      }
+    }
+  }
+}
 
 /**
  * Implements hook_form_FORM_ID_alter().
