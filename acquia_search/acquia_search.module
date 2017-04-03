@@ -356,9 +356,10 @@ function acquia_search_is_server_marked_read_only(Server $server) {
 function acquia_search_get_read_only_mode_warning(Server $server) {
 
   $msg = t('To protect your data, the Acquia Search module is enforcing 
-    read-only mode on the Search API indexes, because it could not figure out what Acquia-hosted Solr 
-    index to connect to. This helps you avoid writing to a production index 
-    if you copy your site to a development or other environment(s).');
+    read-only mode on the Search API indexes, because it could not figure out 
+    what Acquia-hosted Solr index to connect to. This helps you avoid writing to
+    a production index if you copy your site to a development or other 
+    environment(s).');
 
   $backend_config = $server->getBackendConfig();
 
@@ -397,13 +398,13 @@ function acquia_search_get_search_status_message(Server $server) {
   $configuration = $backend->getSolrConnector()->getConfiguration();
 
   $url = $configuration['scheme'] . '://' . $configuration['host'] . ':' . $configuration['port'] . $configuration['path'];
+
   $items = array(
-    t('search_api_solr.module server ID: @env', array('@env' => $server->id())),
+    t('search_api_solr.module server ID: @id', array('@id' => $server->id())),
     t('URL: @url', array('@url' => $url)),
   );
 
   // Report on the behavior chosen.
-  // @todo: Should we use overridden_by_acquia_search from $server->backendConfig() or $server->getBackend()->solrConnector()->getConfiguration()?
   if (isset($configuration['overridden_by_acquia_search'])) {
     $override = $configuration['overridden_by_acquia_search'];
     switch ($override) {
@@ -424,7 +425,6 @@ function acquia_search_get_search_status_message(Server $server) {
     $items[] = t('Solr core is currently reachable and up.');
   }
   else {
-    // Add message with error class.
     $items[] = array(
       '#markup' => '<span class="color-error">' . t('Solr index is currently unreachable.') . '</span>',
     );
@@ -435,7 +435,6 @@ function acquia_search_get_search_status_message(Server $server) {
     $items[] = t('Requests to Solr core are passing authentication checks.');
   }
   else {
-    // Add message with error class.
     $items[] = array(
       '#markup' => '<span class="color-error">' . t('Solr core authentication check fails.') . '</span>',
     );
