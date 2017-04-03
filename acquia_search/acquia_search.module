@@ -187,39 +187,25 @@ function acquia_search_search_api_server_load($entities) {
   // Get the coreService that will tell us the preferred core to use.
   $core_service = acquia_search_get_core_service();
 
-  // Loop through the Server entities.
-  foreach ($entities as $server_id => $server) {
+  $acquia_servers = array_filter($entities, function ($server) {
     /** @var \Drupal\search_api\Entity\Server $server */
     $backend_config = $server->getBackendConfig();
-    // Only for servers where the backend is Acquia.
-    if (!empty($backend_config['connector']) && $backend_config['connector'] == 'solr_acquia_connector') {
+    return !empty($backend_config['connector']) && $backend_config['connector'] == 'solr_acquia_connector';
+  });
 
-      $disable_auto_switch = \Drupal::config('acquia_search.settings')->get('disable_auto_switch');
+  foreach ($acquia_servers as $server_id => $server) {
+    /** @var \Drupal\search_api\Entity\Server $server */
+    $backend_config = $server->getBackendConfig();
 
-      // Set a list of eligible cores.
-      $backend_config['acquia_search_possible_cores'] = $core_service->getListOfPossibleCores();
+    // Set a list of eligible cores.
+    $backend_config['acquia_search_possible_cores'] = $core_service->getListOfPossibleCores();
 
-      // Note what mode this server should switch to.
-      if (acquia_search_should_set_read_only_mode($server_id)) {
-        // Note that any indexes using this server shouldn't be writing through
-        // this server connection. @see acquia_search_search_api_index_load().
-        $backend_config['overridden_by_acquia_search'] = ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY;
-      }
-      else {
-        // If the preferred core is available, note that we are using that.
-        if (empty($disable_auto_switch) && $core_service->isPreferredCoreAvailable()) {
-          $backend_config['overridden_by_acquia_search'] = ACQUIA_SEARCH_OVERRIDE_AUTO_SET;
-        }
-      }
-      // If overrides exist, note that we are using those.
-      $override = \Drupal::config('acquia_search.settings')->get('connection_override');
-      if (!empty($override) && is_array($override)) {
-        $backend_config['overridden_by_acquia_search'] = ACQUIA_SEARCH_EXISTING_OVERRIDE;
-      }
-      $server->setBackendConfig($backend_config);
+    if (acquia_search_should_set_read_only_mode()) {
+      $backend_config['overridden_by_acquia_search'] = ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY;
     }
-  }
 
+    $server->setBackendConfig($backend_config);
+  }
 }
 
 /**
