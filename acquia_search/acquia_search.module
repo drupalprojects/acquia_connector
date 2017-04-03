@@ -451,14 +451,12 @@ function acquia_search_get_search_status_message(Server $server) {
  * Instantiates the PreferredSearchCoreService class to detect what Acquia
  * index ID from those available in the subscription should be used.
  *
- * @param bool $reset
- *   If true, resets internal cache.
  * @return \Drupal\acquia_search\PreferredSearchCoreService
  */
-function acquia_search_get_core_service($reset = false) {
+function acquia_search_get_core_service() {
   static $core_service;
 
-  if (isset($core_service) && !$reset) {
+  if (isset($core_service)) {
     return $core_service;
   }
 
@@ -470,8 +468,8 @@ function acquia_search_get_core_service($reset = false) {
   $sites_foldername = substr($conf_path, strrpos($conf_path, '/') + 1);
   $ah_db_name = '';
   if ($ah_env && $ah_site_name && $ah_site_group) {
-    $tmp = \Drupal\Core\Database\Database::getConnection()->getConnectionOptions();
-    $ah_db_name = $tmp['database'];
+    $options = \Drupal\Core\Database\Database::getConnection()->getConnectionOptions();
+    $ah_db_name = $options['database'];
   }
 
   $subscription = \Drupal::config('acquia_connector.settings')->get('subscription_data');
@@ -506,24 +504,24 @@ function acquia_search_theme_registry_alter(&$theme_registry) {
  * @see acquia_search_theme_registry_alter()
  */
 function acquia_search_theme_search_api_index($variables) {
-  $output = '';
   /** @var \Drupal\search_api\Entity\Index $index */
   $index = $variables['index'];
   /** @var \Drupal\search_api\Entity\Server $server */
   $server = Server::load($index->get('server'));
-  // Verify if this object is actually a server class.
-  if (is_object($server) && get_class($server) == 'Drupal\search_api\Entity\Server') {
-    acquia_search_server_show_read_only_mode_warning($server);
-    $info_box = [
-      '#type' => 'fieldset',
-      '#title' => t('Acquia Search status for this connection'),
-      '#markup' => acquia_search_get_search_status_message($server),
-    ];
-    $output .= render($info_box);
+
+  if (!$server) {
+    return theme_search_api_index($variables);
   }
-  // Call the original theme_search_api_index() function
-  $output .= theme_search_api_index($variables);
-  return $output;
+
+  acquia_search_server_show_read_only_mode_warning($server);
+
+  $info_box = [
+    '#type' => 'fieldset',
+    '#title' => t('Acquia Search status for this connection'),
+    '#markup' => acquia_search_get_search_status_message($server),
+  ];
+
+  return render($info_box) . theme_search_api_index($variables);
 }
 
 /**
@@ -535,20 +533,16 @@ function acquia_search_theme_search_api_index($variables) {
  * @see acquia_search_theme_registry_alter()
  */
 function acquia_search_theme_search_api_server($variables) {
-  $output = '';
-
   /** @var \Drupal\search_api\Entity\Server $server */
   $server = $variables['server'];
 
   acquia_search_server_show_read_only_mode_warning($server);
+
   $info_box = [
     '#type' => 'fieldset',
     '#title' => t('Acquia Search status for this connection'),
     '#markup' => acquia_search_get_search_status_message($server),
   ];
-  $output .= render($info_box);
 
-  // Call the original theme_search_api_index() function
-  $output .= theme_search_api_server($variables);
-  return $output;
+  return render($info_box) . theme_search_api_server($variables);
 }
