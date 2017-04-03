@@ -115,36 +115,38 @@ function acquia_search_entity_operation_alter(array &$operations, EntityInterfac
   }
 }
 
-/**
- * Determine if we should enforce read-only mode for a certain server.
- *
- * @param string $server_id
- *   Machine name of the Search API Server.
- * @return bool
- *
- * @todo: maybe we can't do it per-server so we can remove the need for the single argument.
- */
-function acquia_search_should_we_set_read_only_mode($server_id) {
-
-  // If configuration overrides are found, don't auto-enforce read_only mode.
+function acquia_search_is_connection_config_overridden() {
   $overrides = \Drupal::config('acquia_search.settings')->get('connection_override');
-  if (!empty($overrides) && !empty($overrides['host'])
-    && !empty($overrides['index_id'])
-    && !empty($overrides['derived_key'])) {
-    // @todo: throw exceptions or add logging when we get bad overrides? E.g.
-    // acquia-search.com domains with no derived keys, or missing elements like
-    // host/path.
-    // $message = 'Something something.';
-    // \Drupal::logger('acquia search')->error($message);
-    // throw new \Exception($message);
-    return false;
+
+  if (!$overrides) {
+    return FALSE;
   }
 
-  // If settings.php overrides found for this server, don't auto-enforce read_only mode.
-  // @todo: can we even implement a per-server override?
-  $overrides = \Drupal::config('acquia_search.settings')->get('server_override');
-  if (!empty($overrides[$server_id])) {
-    return false;
+  $is_overridden_and_valid =
+    !empty($overrides['host']) &&
+    !empty($overrides['index_id']) &&
+    !empty($overrides['derived_key']);
+
+  if ($is_overridden_and_valid) {
+    return TRUE;
+  }
+
+  \Drupal::logger('acquia search')->notice("Invalid config override detected for
+   acquia_search.settings.connection_override. It should include host, index_id
+   and derived_key.");
+
+  return FALSE;
+}
+
+/**
+ * Determine if we should enforce read-only mode.
+ *
+ * @return bool
+ */
+function acquia_search_should_set_read_only_mode() {
+
+  if (acquia_search_is_connection_config_overridden()) {
+    return FALSE;
   }
 
   // If we have overrides switching off any of the major behaviors, don't
@@ -152,24 +154,24 @@ function acquia_search_should_we_set_read_only_mode($server_id) {
   $auto_switch_disabled = \Drupal::config('acquia_search.settings')->get('disable_auto_switch');
   $disable_auto_read_only = \Drupal::config('acquia_search.settings')->get('disable_auto_read_only');
   if ($auto_switch_disabled || $disable_auto_read_only) {
-    return false;
+    return FALSE;
   }
 
   // If subscription is expired, then DO enforce read-only mode.
   $subscription = \Drupal::config('acquia_connector.settings')->get('subscription_data');
   $sub_active = !empty($subscription['active']);
   if (!$sub_active) {
-    return true;
+    return TRUE;
   }
 
   // If there is no preferred core, then DO enforce read_only mode
   $core_service = acquia_search_get_core_service();
   if (!$core_service->isPreferredCoreAvailable()) {
-    return true;
+    return TRUE;
   }
 
   // We got here! So we're probably safe to NOT enforce read-only mode.
-  return false;
+  return FALSE;
 }
 
 
@@ -198,7 +200,7 @@ function acquia_search_search_api_server_load($entities) {
       $backend_config['acquia_search_possible_cores'] = $core_service->getListOfPossibleCores();
 
       // Note what mode this server should switch to.
-      if (acquia_search_should_we_set_read_only_mode($server_id)) {
+      if (acquia_search_should_set_read_only_mode($server_id)) {
         // Note that any indexes using this server shouldn't be writing through
         // this server connection. @see acquia_search_search_api_index_load().
         $backend_config['overridden_by_acquia_search'] = ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY;
@@ -284,7 +286,7 @@ function acquia_search_form_search_api_server_status_alter(&$form, \Drupal\Core\
 
       // If this connection is set to read-only, disable the
       //   "Delete all indexed data on this server" action.
-      if (acquia_search_should_we_set_read_only_mode($server->id())) {
+      if (acquia_search_should_set_read_only_mode($server->id())) {
         $form['actions']['clear']['#disabled'] = TRUE;
       }
     }
