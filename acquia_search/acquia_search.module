@@ -273,50 +273,49 @@ function acquia_search_search_api_server_load($entities) {
 /**
  * Implements hook_form_FORM_ID_alter().
  *
- * Alters the Search API server's status form.
+ * Alters the Search API server's status form and displays a warning.
  *
  * @param $form
- * @param \Drupal\Core\Form\FormStateInterface $form_state
- * @param $form_id
  */
-//function acquia_search_form_search_api_server_status_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
-//  if (!empty($form['#server'])) {
-//    /** @var \Drupal\search_api\Entity\Server $server */
-//    $server = $form['#server'];
-//    // Verify if this object is actually a server class.
-//    if (is_object($server) && get_class($server) == 'Drupal\search_api\Entity\Server') {
-//      acquia_search_server_show_read_only_mode_warning($server);
-//
-//      // If this connection is set to read-only, disable the
-//      //   "Delete all indexed data on this server" action.
-//      if (acquia_search_should_set_read_only_mode($server->id())) {
-//        $form['actions']['clear']['#disabled'] = TRUE;
-//      }
-//    }
-//  }
-//}
-
-/**
- * Implements hook_form_FORM_ID_alter().
- *
- * Alters the Search API server's edit form.
- *
- * @param $form
- * @param \Drupal\Core\Form\FormStateInterface $form_state
- * @param $form_id
- */
-function acquia_search_form_search_api_server_edit_form_alter(&$form) {
-  $server = Server::load($form['id']['#default_value']);
-
-  if (!$server) {
+function acquia_search_form_search_api_server_status_alter(&$form) {
+  if (
+    empty($form['#server']) ||
+    !is_object($form['#server']) ||
+    get_class($form['#server']) !== 'Drupal\search_api\Entity\Server'
+  ) {
     return;
   }
 
+  $server = $form['#server'];
+
   acquia_search_server_show_read_only_mode_warning($server);
+
+  // If this connection is set to read-only, disable the "Delete all indexed
+  // data on this server" action.
+  if (acquia_search_should_set_read_only_mode()) {
+    $form['actions']['clear']['#disabled'] = TRUE;
+  }
 }
 
 /**
- * Implements hook_form_FORM_ID_alter().
+ * Implements hook_form_FORM_ID_alter(). NOTE: there is no form with this ID so this code would never fire.
+ *
+ * Display the read-only warning.
+ *
+ * @param $form
+ */
+//function acquia_search_form_search_api_server_edit_form_alter(&$form) {
+//  $server = Server::load($form['id']['#default_value']);
+//
+//  if (!$server) {
+//    return;
+//  }
+//
+//  acquia_search_server_show_read_only_mode_warning($server);
+//}
+
+/**
+ * Implements hook_form_FORM_ID_alter(). NOTE: There no form with this ID so this code would never fire.
  *
  * Shows message if we are editing a Search API server's configuration.
  *
@@ -348,16 +347,18 @@ function acquia_search_form_search_api_server_edit_form_alter(&$form) {
  * @param \Drupal\search_api\Entity\Server $server
  */
 function acquia_search_server_show_read_only_mode_warning(Server $server) {
-  if (acquia_search_is_server_marked_read_only($server)) {
-    $message = acquia_search_get_read_only_mode_warning($server);
-    drupal_set_message($message, 'warning');
-  }
-}
-
-function acquia_search_is_server_marked_read_only(Server $server) {
   $backend_config = $server->getBackendConfig();
-  return !empty($backend_config['overridden_by_acquia_search']) &&
-    $backend_config['overridden_by_acquia_search'] === ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY;
+
+  if (empty($backend_config['overridden_by_acquia_search'])) {
+    return;
+  }
+
+  if ($backend_config['overridden_by_acquia_search'] !== ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY) {
+    return;
+  }
+
+  $message = acquia_search_get_read_only_mode_warning($server);
+  drupal_set_message($message, 'warning');
 }
 
 /**
