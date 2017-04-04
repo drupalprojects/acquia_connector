@@ -159,12 +159,13 @@ function acquia_search_is_connection_config_overridden() {
  */
 function acquia_search_should_set_read_only_mode() {
 
+  // If search config is overridden in settings.php we can't enforce anything.
   if (acquia_search_is_connection_config_overridden()) {
     return FALSE;
   }
 
   // If we have overrides switching off any of the major behaviors, don't
-  //   auto-enforce read_only mode.
+  // auto-enforce read_only mode.
   $auto_switch_disabled = \Drupal::config('acquia_search.settings')->get('disable_auto_switch');
   $disable_auto_read_only = \Drupal::config('acquia_search.settings')->get('disable_auto_read_only');
   if ($auto_switch_disabled || $disable_auto_read_only) {
@@ -172,19 +173,16 @@ function acquia_search_should_set_read_only_mode() {
   }
 
   // If subscription is expired, then DO enforce read-only mode.
-  $subscription = \Drupal::config('acquia_connector.settings')->get('subscription_data');
-  $sub_active = !empty($subscription['active']);
-  if (!$sub_active) {
+  if (!Subscription::isActive()) {
     return TRUE;
   }
 
-  // If there is no preferred core, then DO enforce read_only mode
+  // If there is no preferred core, then DO enforce read_only mode.
   $core_service = acquia_search_get_core_service();
   if (!$core_service->isPreferredCoreAvailable()) {
     return TRUE;
   }
 
-  // We got here! So we're probably safe to NOT enforce read-only mode.
   return FALSE;
 }
 
