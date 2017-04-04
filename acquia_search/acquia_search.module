@@ -222,7 +222,9 @@ function acquia_search_search_api_server_load($entities) {
 }
 
 /**
- * Implements hook_search_api_index_load().
+ * Implements hook_search_api_index_load(). NOTE: I was not able to find the
+ * invocation of this hook in neither search_api nor search_api_solr modules.
+ * I suspect that it does not exists in D8...
  *
  * This takes care of marking indexes as read-only mode under the right
  * conditions (@see acquia_search_search_api_server_load()).
