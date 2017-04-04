@@ -61,7 +61,7 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
   }
 
   protected function setDefaultCore($configuration) {
-    // Set default search configuration.
+    // Assign default search configuration values.
     $index_id = Storage::getIdentifier();
     $path = '/solr/' . Storage::getIdentifier();
     $host = acquia_search_get_search_host();
@@ -74,7 +74,8 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
 
     $preferred_core_service = acquia_search_get_core_service();
 
-    // If a preferred search core is available, use it!
+    // If a preferred search core is available, re-assign the default settings
+    // to use it!
     if ($preferred_core_service->isPreferredCoreAvailable()) {
       $index_id = $preferred_core_service->getPreferredCoreId();
       $path = '/solr/' . $preferred_core_service->getPreferredCoreId();
@@ -82,7 +83,7 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
       $overridden = ACQUIA_SEARCH_OVERRIDE_AUTO_SET;
     }
 
-    // Assign the default settings to the search configuration and return.
+    // Assign the settings to the search configuration and return.
     $configuration['index_id'] = $index_id;
     $configuration['path'] = $path;
     $configuration['host'] = $host;
