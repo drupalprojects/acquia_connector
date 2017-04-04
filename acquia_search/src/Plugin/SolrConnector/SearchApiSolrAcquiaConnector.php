@@ -154,13 +154,13 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
    * {@inheritdoc}
    *
    * Avoid providing an valid Update query if module determines this server
-   *   should be locked down (as indicated by the overridden_by_acquia_search
-   *   server option).
+   * should be locked down (as indicated by the overridden_by_acquia_search
+   * server option).
    */
   public function getUpdateQuery() {
     $this->connect();
     $overridden = $this->solr->getEndpoint('server')->getOption('overridden_by_acquia_search');
-    if ($overridden == ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY) {
+    if ($overridden === ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY) {
       $message = 'The Search API Server serving this index is currently in read-only mode.';
       \Drupal::logger('acquia search')->error($message);
       throw new \Exception($message);
