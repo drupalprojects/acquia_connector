@@ -177,6 +177,9 @@ class AcquiaConnectorSearchOverrideTest extends WebTestBase {
     $this->assertText($this->id . '.prod.' . $this->_getDbName());
     $this->assertText($this->id . '.prod.' . $this->_getSiteFolderName());
 
+    $path = '/admin/config/search/search-api/server/' . $this->server . '/edit';
+    $this->drupalGet($path, ['query' => $overrides ]);
+
     $path = '/admin/config/search/search-api/index/' . $this->index;
     $this->drupalGet($path, ['query' => $overrides ]);
 
