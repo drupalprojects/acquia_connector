@@ -43,8 +43,8 @@ class AcquiaConnectorSearchOverrideTest extends WebTestBase {
 
     parent::setUp();
     // Generate and store a random set of credentials.
-    $this->id = 'WXYZ-12345';
-    $this->key = $this->randomString(32);
+    $this->id =  'TEST_AcquiaConnectorTestID';
+    $this->key = 'TEST_AcquiaConnectorTestKey';
     $this->salt = $this->randomString(32);
     $this->server = 'acquia_search_server';
     $this->index = 'acquia_search_index';
@@ -113,11 +113,13 @@ class AcquiaConnectorSearchOverrideTest extends WebTestBase {
     $this->drupalGet($path, ['query' => $overrides ]);
 
     $this->assertNoText('automatically enforced read-only mode on this connection.');
+    $this->assertNoText('The following Acquia Search Solr index IDs would have worked for your current environment');
 
     $path = '/admin/config/search/search-api/index/' . $this->index;
     $this->drupalGet($path, ['query' => $overrides ]);
 
     $this->assertNoText('automatically enforced read-only mode on this connection.');
+    $this->assertNoText('The following Acquia Search Solr index IDs would have worked for your current environment');
 
   }
 
@@ -201,11 +203,13 @@ class AcquiaConnectorSearchOverrideTest extends WebTestBase {
     $this->drupalGet($path, ['query' => $overrides ]);
 
     $this->assertNoText('automatically enforced read-only mode on this connection.');
+    $this->assertNoText('The following Acquia Search Solr index IDs would have worked for your current environment');
 
     $path = '/admin/config/search/search-api/index/' . $this->index;
     $this->drupalGet($path, ['query' => $overrides ]);
 
     $this->assertNoText('automatically enforced read-only mode on this connection.');
+    $this->assertNoText('The following Acquia Search Solr index IDs would have worked for your current environment');
 
   }
 
@@ -214,9 +218,10 @@ class AcquiaConnectorSearchOverrideTest extends WebTestBase {
    * Connect to the Acquia Subscription.
    */
   public function _connect() {
-
+    global $base_url;
     \Drupal::configFactory()->getEditable('acquia_connector.settings')->set('spi.ssl_verify', FALSE)->save();
     \Drupal::configFactory()->getEditable('acquia_connector.settings')->set('spi.ssl_override', TRUE)->save();
+    \Drupal::configFactory()->getEditable('acquia_connector.settings')->set('spi.server', $base_url)->save();
 
     $admin_user = $this->_createAdminUser();
     $this->drupalLogin($admin_user);
@@ -296,10 +301,11 @@ class AcquiaConnectorSearchOverrideTest extends WebTestBase {
 
     Storage::setIdentifier($acquia_identifier);
 
+    $subscription = \Drupal::config('acquia_connector.settings')->get('subscription_data');
+    $subscription['heartbeat_data'] = array('search_cores' => $available_cores);
+
     \Drupal::configFactory()->getEditable('acquia_connector.settings')
-      ->set('subscription_data', array(
-      'heartbeat_data' => array('search_cores' => $available_cores)
-    ))->save();
+      ->set('subscription_data', $subscription)->save();
 
   }
 

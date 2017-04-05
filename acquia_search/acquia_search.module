@@ -210,6 +210,7 @@ function acquia_search_search_api_server_load($entities) {
 
     // Set a list of eligible cores.
     $backend_config['acquia_search_possible_cores'] = $core_service->getListOfPossibleCores();
+    unset($backend_config['overridden_by_acquia_search']);
 
     if (acquia_search_should_set_read_only_mode()) {
       $backend_config['overridden_by_acquia_search'] = ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY;

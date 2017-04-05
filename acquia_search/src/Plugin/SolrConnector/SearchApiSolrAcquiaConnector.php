@@ -38,6 +38,7 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
     unset($configuration['port']);
     unset($configuration['path']);
     unset($configuration['core']);
+    unset($configuration['overridden_by_acquia_search']);
 
     if (acquia_search_is_auto_switch_disabled()) {
       return $configuration;
@@ -68,10 +69,6 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
     $port = '80';
     $overridden = NULL;
 
-    if (acquia_search_should_set_read_only_mode()) {
-      $overridden = ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY;
-    }
-
     $preferred_core_service = acquia_search_get_core_service();
 
     // If a preferred search core is available, re-assign the default settings
@@ -81,6 +78,9 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
       $path = '/solr/' . $preferred_core_service->getPreferredCoreId();
       $host = $preferred_core_service->getPreferredCoreHostname();
       $overridden = ACQUIA_SEARCH_OVERRIDE_AUTO_SET;
+    }
+    elseif (acquia_search_should_set_read_only_mode()) {
+      $overridden = ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY;
     }
 
     // Assign the settings to the search configuration and return.
