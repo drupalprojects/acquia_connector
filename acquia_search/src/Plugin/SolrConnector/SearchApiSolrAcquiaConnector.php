@@ -62,34 +62,34 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
   }
 
   protected function setDefaultCore($configuration) {
-    // Assign default search configuration values.
-    $index_id = Storage::getIdentifier();
-    $path = '/solr/' . Storage::getIdentifier();
-    $host = acquia_search_get_search_host();
-    $port = '80';
-    $overridden = NULL;
-
     $preferred_core_service = acquia_search_get_core_service();
 
     // If a preferred search core is available, re-assign the default settings
     // to use it!
     if ($preferred_core_service->isPreferredCoreAvailable()) {
-      $index_id = $preferred_core_service->getPreferredCoreId();
-      $path = '/solr/' . $preferred_core_service->getPreferredCoreId();
-      $host = $preferred_core_service->getPreferredCoreHostname();
-      $overridden = ACQUIA_SEARCH_OVERRIDE_AUTO_SET;
+      $configuration['index_id'] = $preferred_core_service->getPreferredCoreId();
+      $configuration['path'] = '/solr/' . $preferred_core_service->getPreferredCoreId();
+      $configuration['host'] = $preferred_core_service->getPreferredCoreHostname();
+      $configuration['port'] = '80';
+      $configuration['overridden_by_acquia_search'] = ACQUIA_SEARCH_OVERRIDE_AUTO_SET;
     }
-    elseif (acquia_search_should_set_read_only_mode()) {
-      $overridden = ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY;
-    }
-
-    // Assign the settings to the search configuration and return.
-    $configuration['index_id'] = $index_id;
-    $configuration['path'] = $path;
-    $configuration['host'] = $host;
-    $configuration['port'] = $port;
-    if ($overridden) {
-      $configuration['overridden_by_acquia_search'] = $overridden;
+    else {
+      // This means we can't detect which Index should be used, so we need to
+      // protect it.
+      //
+      // We enforce read-only mode in 2 ways:
+      // * The module implements hook_search_api_index_load() and alters
+      //   indexes' read-only flag.
+      // * In this plugin, we "emulate" read-only mode by overriding
+      //   $this->getUpdateQuery() and avoiding all updates just in case
+      //   something is still attempting to directly call a Solr update.
+      $configuration['index_id'] = Storage::getIdentifier();
+      $configuration['path'] = '/solr/' . Storage::getIdentifier();
+      $configuration['host'] = acquia_search_get_search_host();
+      $configuration['port'] = '80';
+      if (acquia_search_should_set_read_only_mode()) {
+        $configuration['overridden_by_acquia_search'] = ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY;
+      }
     }
 
     return $configuration;
