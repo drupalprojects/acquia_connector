@@ -522,6 +522,10 @@ function acquia_search_theme_search_api_index($variables) {
     return theme_search_api_index($variables);
   }
 
+  if (!acquia_search_is_acquia_server($server->getBackendConfig())) {
+    return theme_search_api_index($variables);
+  }
+
   acquia_search_server_show_read_only_mode_warning($server);
 
   $info_box = [
@@ -544,6 +548,10 @@ function acquia_search_theme_search_api_index($variables) {
 function acquia_search_theme_search_api_server($variables) {
   /** @var \Drupal\search_api\Entity\Server $server */
   $server = $variables['server'];
+
+  if (!acquia_search_is_acquia_server($server->getBackendConfig())) {
+    return theme_search_api_server($variables);
+  }
 
   acquia_search_server_show_read_only_mode_warning($server);
 
