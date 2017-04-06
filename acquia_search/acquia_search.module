@@ -335,9 +335,10 @@ function acquia_search_form_search_api_index_edit_form_alter(&$form) {
     return;
   }
 
-  acquia_search_server_show_read_only_mode_warning($server);
-
-  $form['options']['read_only']['#disabled'] = TRUE;
+  if (acquia_search_should_set_read_only_mode()) {
+    acquia_search_server_show_read_only_mode_warning($server);
+    $form['options']['read_only']['#disabled'] = TRUE;
+  }
 }
 
 /**
