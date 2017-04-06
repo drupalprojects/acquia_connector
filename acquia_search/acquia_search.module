@@ -297,15 +297,19 @@ function acquia_search_form_search_api_server_status_alter(&$form) {
  *
  * @param $form
  */
-//function acquia_search_form_search_api_server_edit_form_alter(&$form) {
-//  $server = Server::load($form['id']['#default_value']);
-//
-//  if (!$server) {
-//    return;
-//  }
-//
-//  acquia_search_server_show_read_only_mode_warning($server);
-//}
+function acquia_search_form_search_api_server_edit_form_alter(&$form) {
+  $server = Server::load($form['id']['#default_value']);
+
+  if (!$server) {
+    return;
+  }
+
+  if (!acquia_search_is_acquia_server($server->getBackendConfig())) {
+    return;
+  }
+
+  acquia_search_server_show_read_only_mode_warning($server);
+}
 
 /**
  * Implements hook_form_FORM_ID_alter(). NOTE: There no form with this ID so this code would never fire.
@@ -313,26 +317,23 @@ function acquia_search_form_search_api_server_status_alter(&$form) {
  * Shows message if we are editing a Search API server's configuration.
  *
  * @param $form
- * @param \Drupal\Core\Form\FormStateInterface $form_state
- * @param $form_id
  */
-//function acquia_search_form_search_api_index_edit_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
-//  /** @var \Drupal\search_api\Entity\Server $server */
-//  $server = Server::load($form['server']['#default_value']);
-//  // Verify if this object is actually a server class.
-//  if (is_object($server) && get_class($server) == 'Drupal\search_api\Entity\Server') {
-//    acquia_search_server_show_read_only_mode_warning($server);
-//
-//    // If the server for this index is currently overridden by the module to be
-//    //   read-only, then disable the 'read-only' checkbox on the index.
-//    // @todo: replace with acquia_search_should_we_set_read_only_mode()
-//    $backend_config = $server->getBackendConfig();
-//    if (!empty($backend_config['overridden_by_acquia_search']) && $backend_config['overridden_by_acquia_search'] == ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY) {
-//      // @TODO: Disabling the read-only checkbox doesn't prevent setting from being saved on a form submit.
-//      $form['options']['read_only']['#disabled'] = TRUE;
-//    }
-//  }
-//}
+function acquia_search_form_search_api_index_edit_form_alter(&$form) {
+  /** @var \Drupal\search_api\Entity\Server $server */
+  $server = Server::load($form['server']['#default_value']);
+
+  if (!$server) {
+    return;
+  }
+
+  if (!acquia_search_is_acquia_server($server->getBackendConfig())) {
+    return;
+  }
+
+  acquia_search_server_show_read_only_mode_warning($server);
+
+  $form['options']['read_only']['#disabled'] = TRUE;
+}
 
 /**
  * If server has been marked as read-only, show a message.
