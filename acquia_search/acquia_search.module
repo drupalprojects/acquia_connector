@@ -197,9 +197,7 @@ function acquia_search_should_set_read_only_mode() {
  */
 function acquia_search_search_api_server_load($entities) {
   $acquia_servers = array_filter($entities, function ($server) {
-    /** @var \Drupal\search_api\Entity\Server $server */
-    $backend_config = $server->getBackendConfig();
-    return !empty($backend_config['connector']) && $backend_config['connector'] == 'solr_acquia_connector';
+    return acquia_search_is_acquia_server($server->getBackendConfig());
   });
 
   $core_service = acquia_search_get_core_service();
@@ -218,6 +216,18 @@ function acquia_search_search_api_server_load($entities) {
 
     $server->setBackendConfig($backend_config);
   }
+}
+
+/**
+ * Determine whether give server config belongs to an Acquia search server.
+ *
+ * @param array $backend_config
+ *   An array of data normally obtained from
+ *   \Drupal\search_api\Entity\Server->getBackendConfig()
+ * @return bool
+ */
+function acquia_search_is_acquia_server($backend_config) {
+  return !empty($backend_config['connector']) && $backend_config['connector'] === 'solr_acquia_connector';
 }
 
 /**
@@ -266,6 +276,10 @@ function acquia_search_form_search_api_server_status_alter(&$form) {
   }
 
   $server = $form['#server'];
+
+  if (!acquia_search_is_acquia_server($server->getBackendConfig())) {
+    return;
+  }
 
   acquia_search_server_show_read_only_mode_warning($server);
 
