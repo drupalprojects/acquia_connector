@@ -74,7 +74,6 @@ function acquia_search_requirements($phase) {
 
     // Show available search indexes.
     $servers = \Drupal\search_api\Entity\Server::loadMultiple();
-    $read_only_warning_shown_flag = false;
     foreach ($servers as $server_id => $server) {
 
       if (!acquia_search_is_acquia_server($server->getBackendConfig())) {
