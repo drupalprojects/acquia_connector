@@ -243,6 +243,11 @@ function acquia_search_search_api_index_load($entities) {
   // Loop through the Index entities.
   foreach ($entities as &$index) {
     /** @var \Drupal\search_api\Entity\Index $index */
+    $server = Server::load($index->getServerId());
+    if (!acquia_search_is_acquia_server($server->getBackendConfig())) {
+      continue;
+    }
+
     // Reset the overridden_by_acquia_search option.
     $options = $index->getOptions();
     if (!empty($options['overridden_by_acquia_search'])) {
