@@ -76,6 +76,11 @@ function acquia_search_requirements($phase) {
     $servers = \Drupal\search_api\Entity\Server::loadMultiple();
     $read_only_warning_shown_flag = false;
     foreach ($servers as $server_id => $server) {
+
+      if (!acquia_search_is_acquia_server($server->getBackendConfig())) {
+        continue;
+      }
+
       /** @var \Drupal\search_api\Entity\Server $server */
       $msg = acquia_search_get_search_status_message($server);
       $requirements['acquia_search_status_' . $server_id] = [
