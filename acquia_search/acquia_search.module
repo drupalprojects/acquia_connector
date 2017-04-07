@@ -396,59 +396,103 @@ function acquia_search_get_read_only_mode_warning() {
  * @return string
  */
 function acquia_search_get_search_status_message(Server $server) {
-
   /** @var \Drupal\search_api_solr\Plugin\search_api\backend\SearchApiSolrBackend $backend */
   $backend = $server->getBackend();
   $configuration = $backend->getSolrConnector()->getConfiguration();
 
-  $url = $configuration['scheme'] . '://' . $configuration['host'] . ':' . $configuration['port'] . $configuration['path'];
-
-  $items = array(
-    t('search_api_solr.module server ID: @id', array('@id' => $server->id())),
-    t('URL: @url', array('@url' => $url)),
-  );
+  $items[] = acquia_search_get_server_id_message($server->id());
+  $items[] = acquia_search_get_server_url_message($configuration);
 
   // Report on the behavior chosen.
   if (isset($configuration['overridden_by_acquia_search'])) {
-    $override = $configuration['overridden_by_acquia_search'];
-    switch ($override) {
-      case ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY:
-        $items[] = ['#markup' => '<span class="color-warning">' . t('Acquia Search module automatically enforced read-only mode on this connection.') . '</span>'];
-        break;
-      case ACQUIA_SEARCH_OVERRIDE_AUTO_SET:
-        $items[] = t('Acquia Search module automatically selected the proper Solr connection based on the detected environment.');
-        break;
-      case ACQUIA_SEARCH_EXISTING_OVERRIDE:
-        $items[] = ['#markup' => '<span class="color-warning">' . t('Acquia Search module used overrides set from the <strong>acquia_search.settings</strong> configuration object instead of automatically selecting an available Acquia Search Solr connection.') . '</span>'];
-        break;
-    }
+    $items[] = acquia_search_get_overridden_mode_message($configuration['overridden_by_acquia_search']);
   }
 
-  // Ping the Solr index.
-  if ($server->getBackend()->getSolrConnector()->pingCore()) {
-    $items[] = t('Solr core is currently reachable and up.');
-  }
-  else {
-    $items[] = array(
-      '#markup' => '<span class="color-error">' . t('Solr index is currently unreachable.') . '</span>',
-    );
-  }
-
-  // Deep-ping the Solr index to ensure authentication is working.
-  if ($server->getBackend()->getSolrConnector()->pingServer()) {
-    $items[] = t('Requests to Solr core are passing authentication checks.');
-  }
-  else {
-    $items[] = array(
-      '#markup' => '<span class="color-error">' . t('Solr core authentication check fails.') . '</span>',
-    );
-  }
+  $items[] = acquia_search_get_server_availability_message($server);
+  $items[] = acquia_search_get_server_auth_check_message($server);
 
   $list = ['#theme' => 'item_list', '#items' => $items];
   $list = render($list);
   $msg = t('Connection managed by Acquia Search module.') . $list;
 
   return Markup::create((string) $msg);
+}
+
+/**
+ * Get text describing the current override mode.
+ *
+ * @param $override
+ *   Override mode. Read only, core auto selected or using existing overrides.
+ *
+ * @return array|\Drupal\Core\StringTranslation\TranslatableMarkup
+ */
+function acquia_search_get_overridden_mode_message($override) {
+  switch ($override) {
+    case ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY:
+      return ['#markup' => '<span class="color-warning">' . t('Acquia Search module automatically enforced read-only mode on this connection.') . '</span>'];
+    case ACQUIA_SEARCH_OVERRIDE_AUTO_SET:
+      return t('Acquia Search module automatically selected the proper Solr connection based on the detected environment.');
+    case ACQUIA_SEARCH_EXISTING_OVERRIDE:
+      return ['#markup' => '<span class="color-warning">' . t('Acquia Search module used overrides set from the <strong>acquia_search.settings</strong> configuration object instead of automatically selecting an available Acquia Search Solr connection.') . '</span>'];
+  }
+}
+
+/**
+ * Get text showing the current URL based on configuration.
+ *
+ * @param $configuration
+ *   A configuration array containing scheme, host, port and path.
+ *
+ * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+ */
+function acquia_search_get_server_url_message($configuration) {
+  $url = $configuration['scheme'] . '://' . $configuration['host'] . ':' . $configuration['port'] . $configuration['path'];
+  return t('URL: @url', array('@url' => $url));
+}
+
+/**
+ * Get text describing current server ID.
+ *
+ * @param $server_id
+ *   Server ID.
+ * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+ */
+function acquia_search_get_server_id_message($server_id) {
+  return t('search_api_solr.module server ID: @id', array('@id' => $server_id));
+}
+
+/**
+ * Get message describing authentication status for the given server.
+ *
+ * @param \Drupal\search_api\Entity\Server $server
+ *
+ * @return array|\Drupal\Core\StringTranslation\TranslatableMarkup
+ */
+function acquia_search_get_server_auth_check_message($server) {
+  if ($server->getBackend()->getSolrConnector()->pingServer()) {
+    return t('Requests to Solr core are passing authentication checks.');
+  }
+
+  return array(
+    '#markup' => '<span class="color-error">' . t('Solr core authentication check fails.') . '</span>',
+  );
+}
+
+/**
+ * Get text describing availability for the given server.
+ *
+ * @param \Drupal\search_api\Entity\Server $server
+ *
+ * @return array|\Drupal\Core\StringTranslation\TranslatableMarkup
+ */
+function acquia_search_get_server_availability_message($server) {
+  if ($server->getBackend()->getSolrConnector()->pingCore()) {
+    return t('Solr core is currently reachable and up.');
+  }
+
+  return array(
+    '#markup' => '<span class="color-error">' . t('Solr index is currently unreachable.') . '</span>',
+  );
 }
 
 /**
