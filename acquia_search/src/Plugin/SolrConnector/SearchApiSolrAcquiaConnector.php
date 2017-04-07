@@ -56,11 +56,20 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
       return array_merge($configuration, $override);
     }
 
+    // Otherwise, determine and set the correct search config.
     $configuration = $this->setDefaultCore($configuration);
 
     return $configuration;
   }
 
+  /**
+   * Determines and returns Acquia Search configuration.
+   *
+   * @param $configuration
+   *   Existing search configuration.
+   * @return mixed
+   *   Updated configuration.
+   */
   protected function setDefaultCore($configuration) {
     $preferred_core_service = acquia_search_get_core_service();
 

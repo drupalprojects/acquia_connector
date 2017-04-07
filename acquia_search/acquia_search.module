@@ -496,8 +496,9 @@ function acquia_search_get_server_availability_message($server) {
 }
 
 /**
- * Instantiates the PreferredSearchCoreService class to detect what Acquia
- * index ID from those available in the subscription should be used.
+ * Instantiates the PreferredSearchCoreService class, which helps to determines
+ * which search core should be used and whether it is available within the
+ * subscription.
  *
  * @return \Drupal\acquia_search\PreferredSearchCoreService
  */

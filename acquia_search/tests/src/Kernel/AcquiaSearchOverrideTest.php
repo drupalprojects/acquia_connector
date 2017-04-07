@@ -36,15 +36,6 @@ class AcquiaSearchOverrideTest extends KernelTestBase {
   }
 
   /**
-   * Tests to implement:
-   *
-   * 1. defaultConfiguration returns correct overridden values - Done.
-   * 2. getUpdateQuery throws an exception when the config is overridden - Done.
-   * 3. Search API server switches to read-only mode - To be done.
-   * 4. Search API index switches to read-only mode - To be done.
-   */
-
-  /**
    * No Acquia hosting and DB detected - should override into Readonly.
    */
   public function testNonAcquiaHosted() {
