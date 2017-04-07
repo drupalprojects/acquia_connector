@@ -72,32 +72,29 @@ function acquia_search_requirements($phase) {
     $requirements['acquia_search_ssl']['severity'] = $severity;
     $requirements['acquia_search_ssl']['value'] = '';
 
-    // Show available search indexes.
+
     $servers = \Drupal\search_api\Entity\Server::loadMultiple();
-    foreach ($servers as $server_id => $server) {
 
-      if (!acquia_search_is_acquia_server($server->getBackendConfig())) {
-        continue;
-      }
+    $acquia_servers = array_filter($servers, function ($server) {
+      return acquia_search_is_acquia_server($server->getBackendConfig());
+    });
 
-      /** @var \Drupal\search_api\Entity\Server $server */
-      $msg = acquia_search_get_search_status_message($server);
+    // Show available Acquia search indexes.
+    foreach ($acquia_servers as $server_id => $server) {
       $requirements['acquia_search_status_' . $server_id] = [
         'title' => t('Acquia Search connection status'),
         'severity' => REQUIREMENT_OK,
-        'description' => ['#markup' => $msg],
+        'description' => ['#markup' => acquia_search_get_search_status_message($server)],
       ];
+    }
 
-      // Flag when read-only mode was forced because of not finding the right index.
-      $backend_config = $server->getBackendConfig();
-      if (!empty($backend_config['overridden_by_acquia_search']) && $backend_config['overridden_by_acquia_search'] == ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY) {
-        $msg = acquia_search_get_read_only_mode_warning();
-        $requirements['acquia_search_read_only'] = [
-          'title' => t('Acquia Search read-only warning'),
-          'severity' => REQUIREMENT_WARNING,
-          'value' => $msg,
-        ];
-      }
+    // Flag when read-only mode was forced because of not finding the right index.
+    if (acquia_search_should_set_read_only_mode()) {
+      $requirements['acquia_search_read_only'] = [
+        'title' => t('Acquia Search read-only warning'),
+        'severity' => REQUIREMENT_WARNING,
+        'value' => acquia_search_get_read_only_mode_warning(),
+      ];
     }
 
     // Flag if acquia_search_multi_subs module is enabled.
