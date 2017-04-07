@@ -36,7 +36,7 @@ however, poses risks to your data that you should be aware of.  Please consult
 our documentation at https://docs.acquia.com/acquia-search/multiple-cores to
 find out more.
 
-Hidden variables
+Hidden settings
 ----------------
 - acquia_search.settings.disable_auto_switch
     Boolean value; if TRUE, completely disables the auto-switching behavior

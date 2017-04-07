@@ -91,7 +91,7 @@ function acquia_search_requirements($phase) {
       // Flag when read-only mode was forced because of not finding the right index.
       $backend_config = $server->getBackendConfig();
       if (!empty($backend_config['overridden_by_acquia_search']) && $backend_config['overridden_by_acquia_search'] == ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY) {
-        $msg = acquia_search_get_read_only_mode_warning($server);
+        $msg = acquia_search_get_read_only_mode_warning();
         $requirements['acquia_search_read_only'] = [
           'title' => t('Acquia Search read-only warning'),
           'severity' => REQUIREMENT_WARNING,

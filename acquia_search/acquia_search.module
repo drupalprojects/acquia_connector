@@ -164,8 +164,7 @@ function acquia_search_should_set_read_only_mode() {
     return FALSE;
   }
 
-  // If we have overrides switching off any of the major behaviors, don't
-  // auto-enforce read_only mode.
+  // Check if auto-switch or read-only modes are disabled in settings.
   $auto_switch_disabled = \Drupal::config('acquia_search.settings')->get('disable_auto_switch');
   $disable_auto_read_only = \Drupal::config('acquia_search.settings')->get('disable_auto_read_only');
   if ($auto_switch_disabled || $disable_auto_read_only) {
@@ -177,7 +176,7 @@ function acquia_search_should_set_read_only_mode() {
     return TRUE;
   }
 
-  // If there is no preferred core, then DO enforce read_only mode.
+  // If there is no preferred core, then DO enforce read-only mode.
   $core_service = acquia_search_get_core_service();
   if (!$core_service->isPreferredCoreAvailable()) {
     return TRUE;
@@ -190,7 +189,7 @@ function acquia_search_should_set_read_only_mode() {
 /**
  * Implements hook_search_api_server_load().
  *
- * Flag when a certain server should be enforcing read_only mode.
+ * Flag when a certain server should be enforcing read-only mode.
  *
  * @param \Drupal\search_api\Entity\Server[] $entities
  *   Array of Search API server entities.
@@ -219,10 +218,10 @@ function acquia_search_search_api_server_load($entities) {
 }
 
 /**
- * Determine whether give server config belongs to an Acquia search server.
+ * Determine whether given server config belongs to an Acquia search server.
  *
  * @param array $backend_config
- *   An array of data normally obtained from
+ *   An array of data obtained from
  *   \Drupal\search_api\Entity\Server->getBackendConfig()
  * @return bool
  */
@@ -272,31 +271,29 @@ function acquia_search_search_api_index_load($entities) {
  * @param $form
  */
 function acquia_search_form_search_api_server_status_alter(&$form) {
-  if (
-    empty($form['#server']) ||
-    !is_object($form['#server']) ||
-    get_class($form['#server']) !== 'Drupal\search_api\Entity\Server'
-  ) {
+  $server = !empty($form['#server']) ? $form['#server'] : NULL;
+
+  if (!is_object($server) || get_class($server) !== 'Drupal\search_api\Entity\Server') {
     return;
   }
-
-  $server = $form['#server'];
 
   if (!acquia_search_is_acquia_server($server->getBackendConfig())) {
     return;
   }
 
-  acquia_search_server_show_read_only_mode_warning($server);
-
-  // If this connection is set to read-only, disable the "Delete all indexed
-  // data on this server" action.
-  if (acquia_search_should_set_read_only_mode()) {
-    $form['actions']['clear']['#disabled'] = TRUE;
+  if (!acquia_search_should_set_read_only_mode()) {
+    return;
   }
+
+  // Show read-only warning and disable the "Delete all indexed
+  // data on this server" action
+  acquia_search_server_show_read_only_mode_warning();
+
+  $form['actions']['clear']['#disabled'] = TRUE;
 }
 
 /**
- * Implements hook_form_FORM_ID_alter(). NOTE: there is no form with this ID so this code would never fire.
+ * Implements hook_form_FORM_ID_alter().
  *
  * Display the read-only warning.
  *
@@ -313,11 +310,11 @@ function acquia_search_form_search_api_server_edit_form_alter(&$form) {
     return;
   }
 
-  acquia_search_server_show_read_only_mode_warning($server);
+  acquia_search_server_show_read_only_mode_warning();
 }
 
 /**
- * Implements hook_form_FORM_ID_alter(). NOTE: There no form with this ID so this code would never fire.
+ * Implements hook_form_FORM_ID_alter().
  *
  * Shows message if we are editing a Search API server's configuration.
  *
@@ -335,41 +332,32 @@ function acquia_search_form_search_api_index_edit_form_alter(&$form) {
     return;
   }
 
-  if (acquia_search_should_set_read_only_mode()) {
-    acquia_search_server_show_read_only_mode_warning($server);
-    $form['options']['read_only']['#disabled'] = TRUE;
+  if (!acquia_search_should_set_read_only_mode()) {
+    return;
   }
+
+  acquia_search_server_show_read_only_mode_warning();
+  $form['options']['read_only']['#disabled'] = TRUE;
 }
 
 /**
- * If server has been marked as read-only, show a message.
- *
- * @param \Drupal\search_api\Entity\Server $server
+ * If server has been marked as read-only, show the message.
  */
-function acquia_search_server_show_read_only_mode_warning(Server $server) {
-  $backend_config = $server->getBackendConfig();
-
-  if (empty($backend_config['overridden_by_acquia_search'])) {
+function acquia_search_server_show_read_only_mode_warning() {
+  if (!acquia_search_should_set_read_only_mode()) {
     return;
   }
 
-  if ($backend_config['overridden_by_acquia_search'] !== ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY) {
-    return;
-  }
-
-  $message = acquia_search_get_read_only_mode_warning($server);
+  $message = acquia_search_get_read_only_mode_warning();
   drupal_set_message($message, 'warning');
 }
 
 /**
  * Returns formatted message about read-only mode.
  *
- * @param \Drupal\search_api\Entity\Server $server
- *   The Search API server.
- *
  * @return string
  */
-function acquia_search_get_read_only_mode_warning(Server $server) {
+function acquia_search_get_read_only_mode_warning() {
 
   $msg = t('To protect your data, the Acquia Search module is enforcing 
     read-only mode on the Search API indexes, because it could not figure out 
@@ -377,13 +365,13 @@ function acquia_search_get_read_only_mode_warning(Server $server) {
     a production index if you copy your site to a development or other 
     environment(s).');
 
-  $backend_config = $server->getBackendConfig();
+  $core_service = acquia_search_get_core_service();
 
-  if (!empty($backend_config['acquia_search_possible_cores'])) {
+  if ($core_service->getListOfPossibleCores()) {
 
     $item_list = array(
       '#theme' => 'item_list',
-      '#items' => $backend_config['acquia_search_possible_cores'],
+      '#items' => $core_service->getListOfPossibleCores(),
     );
     $list = render($item_list);
 
@@ -533,7 +521,7 @@ function acquia_search_theme_search_api_index($variables) {
     return theme_search_api_index($variables);
   }
 
-  acquia_search_server_show_read_only_mode_warning($server);
+  acquia_search_server_show_read_only_mode_warning();
 
   $info_box = [
     '#type' => 'fieldset',
@@ -560,7 +548,7 @@ function acquia_search_theme_search_api_server($variables) {
     return theme_search_api_server($variables);
   }
 
-  acquia_search_server_show_read_only_mode_warning($server);
+  acquia_search_server_show_read_only_mode_warning();
 
   $info_box = [
     '#type' => 'fieldset',
