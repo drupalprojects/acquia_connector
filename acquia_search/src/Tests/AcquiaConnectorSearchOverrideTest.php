@@ -4,7 +4,6 @@ namespace Drupal\acquia_search\Tests;
 
 use Drupal\acquia_connector\Helper\Storage;
 use Drupal\simpletest\WebTestBase;
-use Drupal\search_api\Entity\Server;
 
 /**
  * Tests the automatic switching behavior of the Acquia Search module.
