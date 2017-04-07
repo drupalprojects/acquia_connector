@@ -310,6 +310,10 @@ function acquia_search_form_search_api_server_edit_form_alter(&$form) {
     return;
   }
 
+  if (!acquia_search_should_set_read_only_mode()) {
+    return;
+  }
+
   acquia_search_server_show_read_only_mode_warning();
 }
 
@@ -344,10 +348,6 @@ function acquia_search_form_search_api_index_edit_form_alter(&$form) {
  * If server has been marked as read-only, show the message.
  */
 function acquia_search_server_show_read_only_mode_warning() {
-  if (!acquia_search_should_set_read_only_mode()) {
-    return;
-  }
-
   $message = acquia_search_get_read_only_mode_warning();
   drupal_set_message($message, 'warning');
 }
@@ -565,7 +565,9 @@ function acquia_search_theme_search_api_index($variables) {
     return theme_search_api_index($variables);
   }
 
-  acquia_search_server_show_read_only_mode_warning();
+  if (acquia_search_should_set_read_only_mode()) {
+    acquia_search_server_show_read_only_mode_warning();
+  }
 
   $info_box = [
     '#type' => 'fieldset',
@@ -592,7 +594,9 @@ function acquia_search_theme_search_api_server($variables) {
     return theme_search_api_server($variables);
   }
 
-  acquia_search_server_show_read_only_mode_warning();
+  if (acquia_search_should_set_read_only_mode()) {
+    acquia_search_server_show_read_only_mode_warning();
+  }
 
   $info_box = [
     '#type' => 'fieldset',
