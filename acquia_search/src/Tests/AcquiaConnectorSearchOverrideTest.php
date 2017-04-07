@@ -82,16 +82,14 @@ class AcquiaConnectorSearchOverrideTest extends WebTestBase {
    */
   public function caseNonAcquiaHosted() {
 
-    $path = '/admin/config/search/search-api/server/' . $this->server;
-    $this->drupalGet($path);
+    $this->drupalGet('/admin/config/search/search-api/server/' . $this->server);
 
     $this->assertText('automatically enforced read-only mode on this connection.');
 
     $delete_btn = $this->xpath('//input[@value="Delete all indexed data on this server"]');
     $this->assertEqual((string) $delete_btn[0]['disabled'], 'disabled');
 
-    $path = '/admin/config/search/search-api/index/' . $this->index;
-    $this->drupalGet($path);
+    $this->drupalGet('/admin/config/search/search-api/index/' . $this->index);
 
     $this->assertText('automatically enforced read-only mode on this connection.');
 
@@ -111,8 +109,7 @@ class AcquiaConnectorSearchOverrideTest extends WebTestBase {
       'AH_SITE_GROUP' => 'testsite1',
     ];
 
-    $path = '/admin/config/search/search-api/server/' . $this->server;
-    $this->drupalGet($path, ['query' => $overrides ]);
+    $this->drupalGet('/admin/config/search/search-api/server/' . $this->server, ['query' => $overrides ]);
 
     $this->assertNoText('automatically enforced read-only mode on this connection.');
     $this->assertNoText('The following Acquia Search Solr index IDs would have worked for your current environment');
@@ -120,8 +117,7 @@ class AcquiaConnectorSearchOverrideTest extends WebTestBase {
     $delete_btn = $this->xpath('//input[@value="Delete all indexed data on this server"]');
     $this->assertNotEqual((string) $delete_btn[0]['disabled'], 'disabled');
 
-    $path = '/admin/config/search/search-api/index/' . $this->index;
-    $this->drupalGet($path, ['query' => $overrides ]);
+    $this->drupalGet('/admin/config/search/search-api/index/' . $this->index, ['query' => $overrides ]);
 
     $this->assertNoText('automatically enforced read-only mode on this connection.');
     $this->assertNoText('The following Acquia Search Solr index IDs would have worked for your current environment');
@@ -142,8 +138,7 @@ class AcquiaConnectorSearchOverrideTest extends WebTestBase {
       'AH_SITE_GROUP' => 'testsite1',
     ];
 
-    $path = '/admin/config/search/search-api/server/' . $this->server;
-    $this->drupalGet($path, ['query' => $overrides ]);
+    $this->drupalGet('/admin/config/search/search-api/server/' . $this->server, ['query' => $overrides ]);
 
     $this->assertText('automatically enforced read-only mode on this connection.');
 
@@ -154,8 +149,7 @@ class AcquiaConnectorSearchOverrideTest extends WebTestBase {
     $delete_btn = $this->xpath('//input[@value="Delete all indexed data on this server"]');
     $this->assertEqual((string) $delete_btn[0]['disabled'], 'disabled');
 
-    $path = '/admin/config/search/search-api/index/' . $this->index;
-    $this->drupalGet($path, ['query' => $overrides ]);
+    $this->drupalGet('/admin/config/search/search-api/index/' . $this->index, ['query' => $overrides ]);
 
     // On index edit page, check the read-only mode state.
     $this->assertText('automatically enforced read-only mode on this connection.');
@@ -176,8 +170,7 @@ class AcquiaConnectorSearchOverrideTest extends WebTestBase {
       'AH_SITE_GROUP' => 'testsite1',
     ];
 
-    $path = '/admin/config/search/search-api/server/' . $this->server;
-    $this->drupalGet($path, ['query' => $overrides ]);
+    $this->drupalGet('/admin/config/search/search-api/server/' . $this->server, ['query' => $overrides ]);
 
     $this->assertText('automatically enforced read-only mode on this connection.');
 
@@ -188,8 +181,7 @@ class AcquiaConnectorSearchOverrideTest extends WebTestBase {
     $delete_btn = $this->xpath('//input[@value="Delete all indexed data on this server"]');
     $this->assertEqual((string) $delete_btn[0]['disabled'], 'disabled');
 
-    $path = '/admin/config/search/search-api/index/' . $this->index;
-    $this->drupalGet($path, ['query' => $overrides ]);
+    $this->drupalGet('/admin/config/search/search-api/index/' . $this->index, ['query' => $overrides ]);
 
     $this->assertText('automatically enforced read-only mode on this connection.');
 
@@ -210,8 +202,7 @@ class AcquiaConnectorSearchOverrideTest extends WebTestBase {
       'AH_PRODUCTION' => 1,
     ];
 
-    $path = '/admin/config/search/search-api/server/' . $this->server;
-    $this->drupalGet($path, ['query' => $overrides ]);
+    $this->drupalGet('/admin/config/search/search-api/server/' . $this->server, ['query' => $overrides ]);
 
     $this->assertNoText('automatically enforced read-only mode on this connection.');
     $this->assertNoText('The following Acquia Search Solr index IDs would have worked for your current environment');
@@ -219,8 +210,7 @@ class AcquiaConnectorSearchOverrideTest extends WebTestBase {
     $delete_btn = $this->xpath('//input[@value="Delete all indexed data on this server"]');
     $this->assertNotEqual((string) $delete_btn[0]['disabled'], 'disabled');
 
-    $path = '/admin/config/search/search-api/index/' . $this->index;
-    $this->drupalGet($path, ['query' => $overrides ]);
+    $this->drupalGet('/admin/config/search/search-api/index/' . $this->index, ['query' => $overrides ]);
 
     $this->assertNoText('automatically enforced read-only mode on this connection.');
     $this->assertNoText('The following Acquia Search Solr index IDs would have worked for your current environment');
