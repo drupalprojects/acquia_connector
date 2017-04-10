@@ -150,7 +150,6 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
     unset($form['port']);
     unset($form['path']);
     unset($form['core']);
-    unset($form['scheme']);
     return $form;
   }
 
