@@ -138,6 +138,8 @@ function acquia_search_is_connection_config_overridden() {
 
   $is_overridden_and_valid =
     !empty($overrides['host']) &&
+    !empty($overrides['scheme']) &&
+    !empty($overrides['port']) &&
     !empty($overrides['index_id']) &&
     !empty($overrides['derived_key']);
 
@@ -146,8 +148,8 @@ function acquia_search_is_connection_config_overridden() {
   }
 
   \Drupal::logger('acquia search')->notice("Invalid config override detected for
-   acquia_search.settings.connection_override. It should include host, index_id
-   and derived_key.");
+   acquia_search.settings.connection_override. It should include host, index_id,
+   scheme, port and derived_key.");
 
   return FALSE;
 }

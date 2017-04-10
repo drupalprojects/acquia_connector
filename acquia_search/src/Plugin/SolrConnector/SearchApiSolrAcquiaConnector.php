@@ -34,73 +34,100 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
    */
   public function defaultConfiguration() {
     $configuration = parent::defaultConfiguration();
-    unset($configuration['host']);
-    unset($configuration['port']);
-    unset($configuration['path']);
-    unset($configuration['core']);
+
+    $configuration['index_id'] = Storage::getIdentifier();
+    $configuration['path'] = '/solr/' . Storage::getIdentifier();
+    $configuration['host'] = acquia_search_get_search_host();
+    $configuration['port'] = '80';
+    $configuration['scheme'] = 'http';
+
     unset($configuration['overridden_by_acquia_search']);
 
+    // If auto-switch feature is turned off - do not attempt to determine the
+    // preferred core.
     if (acquia_search_is_auto_switch_disabled()) {
       return $configuration;
     }
 
     // If the search config is overridden in settings.php, apply this config
-    // to the Solr connection and don't attempt to determine any preferred
-    // cores.
+    // to the Solr connection and don't attempt to determine the preferred
+    // core.
     if (acquia_search_is_connection_config_overridden()) {
-      $override = \Drupal::config('acquia_search.settings')->get('connection_override');
-
-      $configuration['overridden_by_acquia_search'] = ACQUIA_SEARCH_EXISTING_OVERRIDE;
-      $configuration['path'] = '/solr/' . $override['index_id'];
-
-      return array_merge($configuration, $override);
+      $configuration = $this->setOverriddenCore($configuration);
+      return $configuration;
     }
 
-    // Otherwise, determine and set the correct search config.
-    $configuration = $this->setDefaultCore($configuration);
+    $preferred_core_service = acquia_search_get_core_service();
+
+    // If the preferred core available, set it.
+    if ($preferred_core_service->isPreferredCoreAvailable()) {
+      $configuration = $this->setPreferredCore($configuration, $preferred_core_service);
+    }
+    else {
+      // This means we can't detect which search core should be used, so we
+      // need to protect it by setting read-only mode but only if it applies.
+      if (acquia_search_should_set_read_only_mode()) {
+        $configuration = $this->setReadOnlyMode($configuration);
+      }
+    }
 
     return $configuration;
   }
 
   /**
-   * Determines and returns Acquia Search configuration.
+   * Sets the preferred core in the given Solr config.
    *
    * @param $configuration
-   *   Existing search configuration.
-   * @return mixed
-   *   Updated configuration.
+   *   Solr connection configuration.
+   *
+   * @param \Drupal\acquia_search\PreferredSearchCoreService $preferred_core_service
+   *   Service for determining the preferred search core.
+   *
+   * @return array
+   *   Updated Solr connection configuration.
    */
-  protected function setDefaultCore($configuration) {
-    $preferred_core_service = acquia_search_get_core_service();
+  protected function setPreferredCore($configuration, $preferred_core_service) {
+    $configuration['index_id'] = $preferred_core_service->getPreferredCoreId();
+    $configuration['path'] = '/solr/' . $preferred_core_service->getPreferredCoreId();
+    $configuration['host'] = $preferred_core_service->getPreferredCoreHostname();
+    $configuration['overridden_by_acquia_search'] = ACQUIA_SEARCH_OVERRIDE_AUTO_SET;
+    return $configuration;
+  }
 
-    // If a preferred search core is available, re-assign the default settings
-    // to use it!
-    if ($preferred_core_service->isPreferredCoreAvailable()) {
-      $configuration['index_id'] = $preferred_core_service->getPreferredCoreId();
-      $configuration['path'] = '/solr/' . $preferred_core_service->getPreferredCoreId();
-      $configuration['host'] = $preferred_core_service->getPreferredCoreHostname();
-      $configuration['port'] = '80';
-      $configuration['overridden_by_acquia_search'] = ACQUIA_SEARCH_OVERRIDE_AUTO_SET;
-    }
-    else {
-      // This means we can't detect which Index should be used, so we need to
-      // protect it.
-      //
-      // We enforce read-only mode in 2 ways:
-      // * The module implements hook_search_api_index_load() and alters
-      //   indexes' read-only flag.
-      // * In this plugin, we "emulate" read-only mode by overriding
-      //   $this->getUpdateQuery() and avoiding all updates just in case
-      //   something is still attempting to directly call a Solr update.
-      $configuration['index_id'] = Storage::getIdentifier();
-      $configuration['path'] = '/solr/' . Storage::getIdentifier();
-      $configuration['host'] = acquia_search_get_search_host();
-      $configuration['port'] = '80';
-      if (acquia_search_should_set_read_only_mode()) {
-        $configuration['overridden_by_acquia_search'] = ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY;
-      }
-    }
+  /**
+   * Sets the current connection overrides to the given Solr config.
+   *
+   * @param $configuration
+   *   Solr connection configuration.
+   *
+   * @return array
+   *   Updated Solr connection configuration.
+   */
+  protected function setOverriddenCore($configuration) {
+    $override = \Drupal::config('acquia_search.settings')->get('connection_override');
+    $configuration['overridden_by_acquia_search'] = ACQUIA_SEARCH_EXISTING_OVERRIDE;
+    $configuration['path'] = '/solr/' . $override['index_id'];
+    return array_merge($configuration, $override);
+  }
 
+  /**
+   * Sets read-only mode to the given Solr config.
+   *
+   * We enforce read-only mode in 2 ways:
+   * - The module implements hook_search_api_index_load() and alters indexes'
+   * read-only flag.
+   * - In this plugin, we "emulate" read-only mode by overriding
+   * $this->getUpdateQuery() and avoiding all updates just in case something
+   * is still attempting to directly call a Solr update.
+   *
+   * @param $configuration
+   *   Solr connection configuration.
+   *
+   * @return array
+   *   Updated Solr connection configuration.
+   */
+  protected function setReadOnlyMode($configuration) {
+    $configuration['overridden_by_acquia_search'] = ACQUIA_SEARCH_AUTO_OVERRIDE_READ_ONLY;
     return $configuration;
   }
 
@@ -123,6 +150,7 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
     unset($form['port']);
     unset($form['path']);
     unset($form['core']);
+    unset($form['scheme']);
     return $form;
   }
 

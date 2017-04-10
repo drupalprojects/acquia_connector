@@ -64,10 +64,11 @@ Hidden settings
     Here's an example for settings.php:
 
     # Make all Acquia Search connections connect to a certain index.
-    # NOTE: This requires overriding the: host, index_id, path and derived_key
+    # NOTE: This requires overriding the: scheme, host, port, index_id and derived_key
     $config['acquia_search.settings']['connection_override'] = [
+      'scheme' => 'http',
       'host' => 'somehostname.acquia-search.com',
       'index_id' => 'ABCD-12345.prod.mysite',
-      'path' => '/solr/ABCD-12345.prod.mysite',
+      'port' => 80,
       'derived_key' => 'asdfasdfasdfasdfasdfasdfasdfasdf
     ];
