@@ -208,6 +208,16 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
   /**
    * {@inheritdoc}
    */
+  public function getExtractQuery() {
+    $this->connect();
+    $query = $this->solr->createExtract();
+    $query->setHandler('extract/tika');
+    return $query;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getCoreLink() {
     return $this->getServerLink();
   }
