@@ -69,6 +69,12 @@ class SearchSubscriber extends Plugin {
   public function preExecuteRequest(preExecuteRequest $event) {
     $request = $event->getRequest();
     $request->addParam('request_id', uniqid(), TRUE);
+    // If we're hosted on Acquia, and have an Acquia request ID,
+    // append it to the request so that we map Solr queries to Acquia search requests.
+    if (isset($_ENV['HTTP_X_REQUEST_ID'])) {
+      $xid = empty($_ENV['HTTP_X_REQUEST_ID']) ? '-' : $_ENV['HTTP_X_REQUEST_ID'];
+      $request->addParam('x-request-id', $xid);
+    }
     $endpoint = $this->client->getEndpoint();
     $this->uri = $endpoint->getBaseUri() . $request->getUri();
 
