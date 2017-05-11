@@ -419,7 +419,7 @@ function acquia_search_get_search_status_message(Server $server) {
   $items[] = acquia_search_get_server_auth_check_message($server);
 
   $list = ['#theme' => 'item_list', '#items' => $items];
-  $list = render($list);
+  $list = \Drupal::service('renderer')->renderRoot($list);
   $msg = t('Connection managed by Acquia Search module.') . $list;
 
   return Markup::create((string) $msg);
