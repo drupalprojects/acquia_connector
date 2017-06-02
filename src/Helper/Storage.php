@@ -18,7 +18,7 @@ class Storage {
    * @return mixed
    *   Acquia Subscription identifier.
    */
-  static public function getIdentifier() {
+  public function getIdentifier() {
     return \Drupal::state()->get('acquia_connector.identifier');
   }
 
@@ -28,7 +28,7 @@ class Storage {
    * @return mixed
    *    Acquia Subscription key.
    */
-  static public function getKey() {
+  public function getKey() {
     return \Drupal::state()->get('acquia_connector.key');
   }
 
@@ -38,7 +38,7 @@ class Storage {
    * @param string $value
    *    Acquia Subscription identifier.
    */
-  static public function setIdentifier($value) {
+  public function setIdentifier($value) {
     \Drupal::state()->set('acquia_connector.identifier', $value);
   }
 
@@ -48,7 +48,7 @@ class Storage {
    * @param string $value
    *    Acquia Subscription key.
    */
-  static public function setKey($value) {
+  public function setKey($value) {
     \Drupal::state()->set('acquia_connector.key', $value);
   }
 

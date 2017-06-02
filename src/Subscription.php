@@ -43,7 +43,7 @@ class Subscription {
    * @return mixed
    *   FALSE, integer (error number), or subscription data.
    */
-  static public function update($params = array()) {
+  public function update($params = array()) {
     $config = \Drupal::configFactory()->getEditable('acquia_connector.settings');
     $current_subscription = $config->get('subscription_data');
     $subscription = FALSE;
@@ -61,8 +61,8 @@ class Subscription {
       }
       catch (ConnectorException $e) {
         switch ($e->getCustomMessage('code')) {
-          case static::NOT_FOUND:
-          case static::EXPIRED:
+          case self::NOT_FOUND:
+          case self::EXPIRED:
             // Fall through since these values are stored and used by
             // acquia_search_acquia_subscription_status()
             $subscription = $e->getCustomMessage('code');
@@ -87,14 +87,14 @@ class Subscription {
   /**
    * Helper function to check if an identifier and key exist.
    */
-  static public function hasCredentials() {
+  public function hasCredentials() {
     return Storage::getIdentifier() && Storage::getKey();
   }
 
   /**
    * Helper function to check if the site has an active subscription.
    */
-  static public function isActive() {
+  public function isActive() {
     $active = FALSE;
     // Subscription cannot be active if we have no credentials.
     if (self::hasCredentials()) {
