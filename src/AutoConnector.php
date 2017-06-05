@@ -14,17 +14,49 @@ use Drupal\Core\Url;
 class AutoConnector {
 
   /**
+   * Holds Subscription.
+   *
+   * @var Subscription
+   */
+  protected $subscription;
+
+  /**
+   * Holds Storage.
+   *
+   * @var Storage
+   */
+  protected $storage;
+
+  /**
+   * Holds global config.
+   *
+   * @var array
+   */
+  protected $globalConfig;
+
+  /**
+   * Holds User.
+   *
+   * @var AccountInterface
+   */
+  protected $user;
+
+  /**
    * AutoConnector constructor.
    *
    * @param Subscription $subscription
+   *   Acquia Subscription.
    * @param Storage $storage
+   *   Storage.
    * @param AccountInterface $user
+   *   User.
    * @param array $global_config
+   *   Global config.
    */
   public function __construct(Subscription $subscription, Storage $storage, AccountInterface $user, array $global_config) {
     $this->subscription = $subscription;
     $this->storage = $storage;
-    $this->global_config = $global_config;
+    $this->globalConfig = $global_config;
     $this->user = $user;
   }
 
@@ -32,6 +64,7 @@ class AutoConnector {
    * Ensures a connection to Acquia Subscription.
    *
    * @return bool|mixed
+   *   False or whatever is returned by Subscription::update.
    */
   public function connectToAcquia() {
 
@@ -39,16 +72,16 @@ class AutoConnector {
       return FALSE;
     }
 
-    if (empty($this->global_config['ah_network_key'])) {
+    if (empty($this->globalConfig['ah_network_key'])) {
       return FALSE;
     }
 
-    if (empty($this->global_config['ah_network_identifier'])) {
+    if (empty($this->globalConfig['ah_network_identifier'])) {
       return FALSE;
     }
 
-    $this->storage->setKey($this->global_config['ah_network_key']);
-    $this->storage->setIdentifier($this->global_config['ah_network_identifier']);
+    $this->storage->setKey($this->globalConfig['ah_network_key']);
+    $this->storage->setIdentifier($this->globalConfig['ah_network_identifier']);
 
     $activated = $this->subscription->update();
 
