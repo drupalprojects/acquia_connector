@@ -33,7 +33,7 @@ class AutoConnector {
    *
    * @return bool|mixed
    */
-  public function ensure() {
+  public function connectToAcquia() {
 
     if ($this->subscription->hasCredentials()) {
       return FALSE;

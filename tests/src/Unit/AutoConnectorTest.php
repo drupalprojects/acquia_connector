@@ -31,9 +31,9 @@ class AutoConnectorTest extends UnitTestCase {
       'ah_network_key' => '12345678901234567890',
     ];
 
-    $auto_connect = new AutoConnector($subscription_mock->reveal(), $storage_mock->reveal(), $user_mock->reveal(), $config);
+    $auto_connector = new AutoConnector($subscription_mock->reveal(), $storage_mock->reveal(), $user_mock->reveal(), $config);
 
-    $auto_connected = $auto_connect->ensure();
+    $auto_connected = $auto_connector->connectToAcquia();
 
     $this->assertTrue($auto_connected);
 
@@ -60,9 +60,9 @@ class AutoConnectorTest extends UnitTestCase {
       'ah_network_key' => '12345678901234567890',
     ];
 
-    $auto_connect = new AutoConnector($subscription_mock->reveal(), $storage_mock->reveal(), $user_mock->reveal(), $config);
+    $auto_connector = new AutoConnector($subscription_mock->reveal(), $storage_mock->reveal(), $user_mock->reveal(), $config);
 
-    $auto_connected = $auto_connect->ensure();
+    $auto_connected = $auto_connector->connectToAcquia();
 
     $this->assertFalse($auto_connected);
 
@@ -82,9 +82,9 @@ class AutoConnectorTest extends UnitTestCase {
 
     $config = [];
 
-    $auto_connect = new AutoConnector($subscription_mock->reveal(), $storage_mock->reveal(), $user_mock->reveal(), $config);
+    $auto_connector = new AutoConnector($subscription_mock->reveal(), $storage_mock->reveal(), $user_mock->reveal(), $config);
 
-    $auto_connected = $auto_connect->ensure();
+    $auto_connected = $auto_connector->connectToAcquia();
 
     $this->assertFalse($auto_connected);
 

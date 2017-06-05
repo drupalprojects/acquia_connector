@@ -373,6 +373,6 @@ function acquia_connector_auto_connect() {
   $user = \Drupal::currentUser();
   global $config;
 
-  $auto_connect = new AutoConnector($subscription, $storage, $user, $config);
-  $auto_connect->ensure();
+  $auto_connector = new AutoConnector($subscription, $storage, $user, $config);
+  $auto_connector->connectToAcquia();
 }
