@@ -65,8 +65,8 @@ class AutoConnector {
    */
   protected function showMessage() {
     if (function_exists('t') && function_exists('drupal_set_message')) {
-      $url = Url::fromRoute('acquia_connector.setup');
-      $text = t('Your site has been automatically connected to Acquia. <a href="!url">Change subscription</a>', ['!url' => $url]);
+      $url = Url::fromRoute('acquia_connector.setup')->toString();
+      $text = t('Your site has been automatically connected to Acquia. <a href=":url">Change subscription</a>', [':url' => $url]);
       drupal_set_message($text, 'status', FALSE);
     }
   }
