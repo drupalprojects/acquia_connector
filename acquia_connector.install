@@ -113,7 +113,8 @@ function acquia_connector_requirements($phase) {
       // or we know they have credentials but not active (not set up yet) or
       // we have credentials but an inactive subscription (either bad
       // credentials or expired subscription).
-      if (Subscription::isActive()) {
+
+      if ($subscription->isActive()) {
         $requirements['acquia_subscription_status'] = array(
           'title' => t('Acquia Subscription status'),
           'severity' => REQUIREMENT_OK,

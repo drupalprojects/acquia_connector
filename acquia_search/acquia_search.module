@@ -174,7 +174,8 @@ function acquia_search_should_set_read_only_mode() {
   }
 
   // If subscription is expired, then DO enforce read-only mode.
-  if (!Subscription::isActive()) {
+  $subscription = new Subscription();
+  if (!$subscription->isActive()) {
     return TRUE;
   }
 

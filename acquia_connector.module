@@ -120,14 +120,15 @@ function acquia_connector_toolbar() {
     ],
   ];
 
-  if (Subscription::isActive()) {
-    $subscription = \Drupal::config('acquia_connector.settings')->get('subscription_data');
-    if (is_array($subscription['expiration_date']) && isset($subscription['active']) && $subscription['active'] !== FALSE) {
+  $subscription = new Subscription();
+  if ($subscription->isActive()) {
+    $subscription_data = \Drupal::config('acquia_connector.settings')->get('subscription_data');
+    if (is_array($subscription_data['expiration_date']) && isset($subscription_data['active']) && $subscription_data['active'] !== FALSE) {
       $link['#title'] = t('Subscription active (expires @date)', array(
-        '@date' => \Drupal::service('date.formatter')->format(strtotime($subscription['expiration_date']['value']), 'custom', 'Y/n/j'),
+        '@date' => \Drupal::service('date.formatter')->format(strtotime($subscription_data['expiration_date']['value']), 'custom', 'Y/n/j'),
       ));
       $link['#attributes']['class'][] = 'acquia-active-subscription';
-      $link['#url'] = Url::fromUri($subscription['href']);
+      $link['#url'] = Url::fromUri($subscription_data['href']);
     }
   }
 
