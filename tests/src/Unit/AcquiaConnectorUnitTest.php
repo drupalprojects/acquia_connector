@@ -30,7 +30,6 @@ class AcquiaConnectorUnitTest extends UnitTestCase {
    * {@inheritdoc}
    */
   protected function setUp() {
-
     parent::setUp();
   }
 
