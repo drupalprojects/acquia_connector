@@ -142,14 +142,15 @@ class CredentialForm extends ConfigFormBase {
 
     // Check subscription and send a heartbeat to Acquia Network via XML-RPC.
     // Our status gets updated locally via the return data.
-    $subscription = Subscription::update();
+    $subscription = new Subscription();
+    $subscription_data = $subscription->update();
 
     // Redirect to the path without the suffix.
     $form_state->setRedirect('acquia_connector.settings');
 
     drupal_flush_all_caches();
 
-    if ($subscription['active']) {
+    if ($subscription_data['active']) {
       drupal_set_message($this->t('<h3>Connection successful!</h3>You are now connected to Acquia Cloud. Please enter a name for your site to begin sending profile data.'));
     }
   }

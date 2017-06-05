@@ -89,7 +89,8 @@ function acquia_connector_cron() {
   }
 
   // Check subscription and send a heartbeat to Acquia Network.
-  Subscription::update();
+  $subscription = new Subscription();
+  $subscription->update();
 
   // Get the last time we processed data.
   $last = \Drupal::state()->get('acquia_connector.cron_last', 0);

@@ -30,7 +30,8 @@ function acquia_connector_requirements($phase) {
       $config = \Drupal::config('acquia_connector.settings');
       $use_cron = $config->get('spi.use_cron');
       $last_sent = \Drupal::state()->get('acquia_connector.cron_last', 0);
-      $has_credentials = Subscription::hasCredentials();
+      $subscription = new Subscription();
+      $has_credentials = $subscription->hasCredentials();
 
       if ($has_credentials) {
         $key = sha1(Drupal::service('private_key')->get());
