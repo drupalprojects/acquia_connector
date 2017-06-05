@@ -332,7 +332,7 @@ function acquia_connector_show_free_tier_promo() {
     return;
   }
 
-  $ac_config = $this->configFactory->get('acquia_connector.settings');
+  $ac_config = \Drupal::configFactory()->get('acquia_connector.settings');
 
   if ($ac_config->get('hide_signup_messages')) {
     return;
