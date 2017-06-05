@@ -354,7 +354,7 @@ function acquia_connector_show_free_tier_promo() {
     return;
   }
 
-  // Display a message asking to connect to the Acquia Subscription.
+  // Display the promo message.
   $message = t('Sign up for Acquia Cloud Free, a free Drupal sandbox to experiment with new features, test your code quality, and apply continuous integration best practices. Check out the <a href="@acquia-free">epic set of dev features and tools</a> that come with your free subscription.<br/>If you have an Acquia Subscription, <a href="@settings">connect now</a>. Otherwise, you can turn this message off by disabling the Acquia Connector modules.', [
     '@acquia-free' => Url::fromUri('https://www.acquia.com/acquia-cloud-free')->getUri(),
     '@settings' => Url::fromRoute('acquia_connector.setup')->toString(),
