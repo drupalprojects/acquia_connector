@@ -140,6 +140,28 @@ class AcquiaConnectorUnitTest extends UnitTestCase {
 
   }
 
+  public function testAutoConnectWhenNoCredsInGlobalConfig() {
+
+    $subscription_mock = $this->prophesize(Subscription::CLASS);
+    $subscription_mock->hasCredentials()->willReturn(FALSE);
+    $subscription_mock->update()->shouldNotBeCalled();
+
+    $storage_mock = $this->prophesize(Storage::CLASS);
+    $storage_mock->setKey()->shouldNotBeCalled();
+    $storage_mock->setIdentifier()->shouldNotBeCalled();
+
+    $user_mock = $this->prophesize(AccountInterface::CLASS);
+
+    $config = array();
+
+    $auto_connect = new AutoConnector($subscription_mock->reveal(), $storage_mock->reveal(), $user_mock->reveal(), $config);
+
+    $auto_connected = $auto_connect->ensure();
+
+    $this->assertFalse($auto_connected);
+
+  }
+
 }
 /**
  * {@inheritdoc}

@@ -11,6 +11,14 @@ use Drupal\acquia_connector\Subscription;
 use Drupal\Core\Url;
 
 /**
+ * Implements hook_uninstall().
+ */
+function acquia_connector_uninstall() {
+  $storage = new Storage();
+  $storage->deleteAllData();
+}
+
+/**
  * Implements hook_requirements().
  */
 function acquia_connector_requirements($phase) {

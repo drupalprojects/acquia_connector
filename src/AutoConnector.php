@@ -26,6 +26,14 @@ class AutoConnector {
       return FALSE;
     }
 
+    if (empty($this->global_config['ah_network_key'])) {
+      return FALSE;
+    }
+
+    if (empty($this->global_config['ah_network_identifier'])) {
+      return FALSE;
+    }
+
     $this->storage->setKey($this->global_config['ah_network_key']);
     $this->storage->setIdentifier($this->global_config['ah_network_identifier']);
 

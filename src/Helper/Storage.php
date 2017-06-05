@@ -52,4 +52,14 @@ class Storage {
     \Drupal::state()->set('acquia_connector.key', $value);
   }
 
+  /**
+   * Deletes all stored data.
+   */
+  public function deleteAllData() {
+    \Drupal::state()->deleteMultiple(array(
+      'acquia_connector.key',
+      'acquia_connector.identifier'
+    ));
+  }
+
 }
