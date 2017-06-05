@@ -313,7 +313,6 @@ function acquia_connector_show_free_tier_promo() {
 
   $subscription = new Subscription();
 
-  // Store server information for SPI in case data is being sent from PHP CLI.
   if (PHP_SAPI == 'cli') {
     return;
   }
@@ -321,7 +320,7 @@ function acquia_connector_show_free_tier_promo() {
   if (\Drupal::request()->server->get('REQUEST_METHOD') == 'POST') {
     return;
   }
-  // Check that we're not on an AJAX overlay page.
+  // Check that we're not on an AJAX request.
   if (\Drupal::request()->isXmlHttpRequest()) {
     return;
   }
@@ -355,18 +354,12 @@ function acquia_connector_show_free_tier_promo() {
     return;
   }
 
-  // Display a message asking to connect to the Acquia Network.
-  $text = (string) t('Sign up for Acquia Cloud Free, a free Drupal sandbox to experiment with new features, test your code quality, and apply continuous integration best practices. Check out the <a href="@acquia-free">epic set of dev features and tools</a> that come with your free subscription.<br/>If you have an Acquia Subscription, <a href="@settings">connect now</a>. Otherwise, you can turn this message off by disabling the Acquia Connector modules.');
-  if (\Drupal::request()->server->has('AH_SITE_GROUP')) {
-    $text = (string) t('<a href="@settings">Connect your site to the Acquia Subscription now</a>. <a href="@more">Learn more</a>.');
-  }
-  $message = t(
-    $text,
-    [
-      '@more' => Url::fromUri('https://docs.acquia.com/network/install')->getUri(),
-      '@acquia-free' => Url::fromUri('https://www.acquia.com/acquia-cloud-free')->getUri(),
-      '@settings' => Url::fromRoute('acquia_connector.setup')->toString(),
-    ]);
+  // Display a message asking to connect to the Acquia Subscription.
+  $message = t('Sign up for Acquia Cloud Free, a free Drupal sandbox to experiment with new features, test your code quality, and apply continuous integration best practices. Check out the <a href="@acquia-free">epic set of dev features and tools</a> that come with your free subscription.<br/>If you have an Acquia Subscription, <a href="@settings">connect now</a>. Otherwise, you can turn this message off by disabling the Acquia Connector modules.', [
+    '@acquia-free' => Url::fromUri('https://www.acquia.com/acquia-cloud-free')->getUri(),
+    '@settings' => Url::fromRoute('acquia_connector.setup')->toString(),
+  ]);
+
   drupal_set_message($message, 'warning', FALSE);
 
 }
