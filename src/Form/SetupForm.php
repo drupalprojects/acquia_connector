@@ -184,8 +184,9 @@ class SetupForm extends ConfigFormBase {
       $sub = $storage['response']['subscription'][$form_state->getValue('subscription')];
       $config->set('subscription_name', $sub['name'])->save();
 
-      Storage::setKey($sub['key']);
-      Storage::setIdentifier($sub['identifier']);
+      $storage = new Storage();
+      $storage->setKey($sub['key']);
+      $storage->setIdentifier($sub['identifier']);
     }
     else {
       $this->automaticStartSubmit($form_state);
@@ -235,8 +236,9 @@ class SetupForm extends ConfigFormBase {
       $sub = $storage['response']['subscription'][0];
       $config->set('subscription_name', $sub['name'])->save();
 
-      Storage::setKey($sub['key']);
-      Storage::setIdentifier($sub['identifier']);
+      $storage = new Storage();
+      $storage->setKey($sub['key']);
+      $storage->setIdentifier($sub['identifier']);
     }
   }
 

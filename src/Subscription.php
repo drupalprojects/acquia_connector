@@ -55,8 +55,9 @@ class Subscription {
     else {
       // Get our subscription data.
       try {
-        $key = Storage::getKey();
-        $identifier = Storage::getIdentifier();
+        $storage = new Storage();
+        $key = $storage->getKey();
+        $identifier = $storage->getIdentifier();
         $subscription = \Drupal::service('acquia_connector.client')->getSubscription($identifier, $key, $params);
       }
       catch (ConnectorException $e) {
@@ -88,7 +89,8 @@ class Subscription {
    * Helper function to check if an identifier and key exist.
    */
   public function hasCredentials() {
-    return Storage::getIdentifier() && Storage::getKey();
+    $storage = new Storage();
+    return $storage->getIdentifier() && $storage->getKey();
   }
 
   /**
@@ -105,8 +107,9 @@ class Subscription {
       // Make sure we have data at least once per day.
       if (isset($subscription_timestamp) && (time() - $subscription_timestamp > 60 * 60 * 24)) {
         try {
-          $key = Storage::getKey();
-          $identifier = Storage::getIdentifier();
+          $storage = new Storage();
+          $key = $storage->getKey();
+          $identifier = $storage->getIdentifier();
           $subscription = \Drupal::service('acquia_connector.client')->getSubscription($identifier, $key, ['no_heartbeat' => 1]);
         }
         catch (ConnectorException $e) {

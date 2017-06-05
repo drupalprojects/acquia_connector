@@ -35,8 +35,9 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
   public function defaultConfiguration() {
     $configuration = parent::defaultConfiguration();
 
-    $configuration['index_id'] = Storage::getIdentifier();
-    $configuration['path'] = '/solr/' . Storage::getIdentifier();
+    $storage = new Storage();
+    $configuration['index_id'] = $storage->getIdentifier();
+    $configuration['path'] = '/solr/' . $storage->getIdentifier();
     $configuration['host'] = acquia_search_get_search_host();
     $configuration['port'] = '80';
     $configuration['scheme'] = 'http';

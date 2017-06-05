@@ -562,8 +562,9 @@ class AcquiaConnectorModuleTest extends WebTestBase {
     $config->clear('subscription_data')->set('subscription_data', ['active' => FALSE]);
     $config->save();
 
-    Storage::setKey('');
-    Storage::setIdentifier('');
+    $storage = new Storage();
+    $storage->setKey('');
+    $storage->setIdentifier('');
 
     \Drupal::state()->set('acquia_connector_test_request_count', 0);
     \Drupal::state()->resetCache();
