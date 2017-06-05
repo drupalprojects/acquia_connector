@@ -60,6 +60,9 @@ class AutoConnector {
 
   }
 
+  /**
+   * Displays DSM about automatically established connection.
+   */
   protected function showMessage() {
     if (function_exists('t') && function_exists('drupal_set_message')) {
       $url = Url::fromRoute('acquia_connector.setup');
