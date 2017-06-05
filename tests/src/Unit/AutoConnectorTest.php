@@ -15,6 +15,11 @@ use Drupal\Tests\UnitTestCase;
  */
 class AutoConnectorTest extends UnitTestCase {
 
+  /**
+   * Tests the happy path:
+   *  - when there is not current connection (stored credentials)
+   *  - attempt to connect succeeds
+   */
   public function testAutoConnect() {
 
     $subscription_mock = $this->prophesize(Subscription::CLASS);
@@ -43,6 +48,9 @@ class AutoConnectorTest extends UnitTestCase {
 
   }
 
+  /**
+   * Tests the scenario when the site is already connected to Acquia.
+   */
   public function testAutoConnectWhenAlreadyConnected() {
 
     $subscription_mock = $this->prophesize(Subscription::CLASS);
@@ -68,6 +76,10 @@ class AutoConnectorTest extends UnitTestCase {
 
   }
 
+  /**
+   * Tests the scenario when the site is not connected but there are no
+   * credentials provided by the global config.
+   */
   public function testAutoConnectWhenNoCredsInGlobalConfig() {
 
     $subscription_mock = $this->prophesize(Subscription::CLASS);
