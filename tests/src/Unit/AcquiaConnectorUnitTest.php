@@ -7,11 +7,7 @@
 
 namespace Drupal\Tests\acquia_connector\Unit;
 
-use Drupal\Core\Session\AccountInterface;
 use Drupal\acquia_connector\Controller\StatusController;
-use Drupal\acquia_connector\AutoConnector;
-use Drupal\acquia_connector\Helper\Storage;
-use Drupal\acquia_connector\Subscription;
 use Drupal\Tests\UnitTestCase;
 use Drupal\acquia_connector\Client;
 
