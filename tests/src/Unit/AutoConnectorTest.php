@@ -5,7 +5,6 @@ namespace Drupal\Tests\acquia_connector\Unit;
 use Drupal\acquia_connector\AutoConnector;
 use Drupal\acquia_connector\Helper\Storage;
 use Drupal\acquia_connector\Subscription;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\Tests\UnitTestCase;
 
 /**
@@ -28,15 +27,12 @@ class AutoConnectorTest extends UnitTestCase {
 
     $storage_mock = $this->prophesize(Storage::CLASS);
 
-    $user_mock = $this->prophesize(AccountInterface::CLASS);
-    $user_mock->hasPermission('administer site configuration')->willReturn(TRUE);
-
     $config = [
       'ah_network_identifier' => 'WXYZ-12345',
       'ah_network_key' => '12345678901234567890',
     ];
 
-    $auto_connector = new AutoConnector($subscription_mock->reveal(), $storage_mock->reveal(), $user_mock->reveal(), $config);
+    $auto_connector = new AutoConnector($subscription_mock->reveal(), $storage_mock->reveal(), $config);
 
     $auto_connected = $auto_connector->connectToAcquia();
 
@@ -61,14 +57,12 @@ class AutoConnectorTest extends UnitTestCase {
     $storage_mock->setKey()->shouldNotBeCalled();
     $storage_mock->setIdentifier()->shouldNotBeCalled();
 
-    $user_mock = $this->prophesize(AccountInterface::CLASS);
-
     $config = [
       'ah_network_identifier' => 'WXYZ-12345',
       'ah_network_key' => '12345678901234567890',
     ];
 
-    $auto_connector = new AutoConnector($subscription_mock->reveal(), $storage_mock->reveal(), $user_mock->reveal(), $config);
+    $auto_connector = new AutoConnector($subscription_mock->reveal(), $storage_mock->reveal(), $config);
 
     $auto_connected = $auto_connector->connectToAcquia();
 
@@ -90,11 +84,9 @@ class AutoConnectorTest extends UnitTestCase {
     $storage_mock->setKey()->shouldNotBeCalled();
     $storage_mock->setIdentifier()->shouldNotBeCalled();
 
-    $user_mock = $this->prophesize(AccountInterface::CLASS);
-
     $config = [];
 
-    $auto_connector = new AutoConnector($subscription_mock->reveal(), $storage_mock->reveal(), $user_mock->reveal(), $config);
+    $auto_connector = new AutoConnector($subscription_mock->reveal(), $storage_mock->reveal(), $config);
 
     $auto_connected = $auto_connector->connectToAcquia();
 

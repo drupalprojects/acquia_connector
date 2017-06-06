@@ -373,6 +373,12 @@ function acquia_connector_auto_connect() {
   $user = \Drupal::currentUser();
   global $config;
 
-  $auto_connector = new AutoConnector($subscription, $storage, $user, $config);
-  $auto_connector->connectToAcquia();
+  $auto_connector = new AutoConnector($subscription, $storage, $config);
+  $connected = $auto_connector->connectToAcquia();
+
+  if ($connected && $user->hasPermission('administer site configuration')) {
+    $url = Url::fromRoute('acquia_connector.setup')->toString();
+    $text = t('Your site has been automatically connected to Acquia. <a href=":url">Change subscription</a>', [':url' => $url]);
+    drupal_set_message($text, 'status', FALSE);
+  }
 }
