@@ -218,6 +218,17 @@ class SearchApiSolrAcquiaConnector extends SolrConnectorPluginBase {
   /**
    * {@inheritdoc}
    */
+  public function getMoreLikeThisQuery() {
+    $this->connect();
+    $query = $this->solr->createMoreLikeThis();
+    $query->setHandler('select');
+    $query->addParam('qt', 'mlt');
+    return $query;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getCoreLink() {
     return $this->getServerLink();
   }
