@@ -49,20 +49,20 @@ class AcquiaSearchV3ApiClient {
     $result = FALSE;
     if ($cache = $this->cache->get('acquia_search.v3indexes')) {
       if (!empty($cache->data)) {
-        $result = $cache->data;
+        return $cache->data;
       }
     }
-    else {
-      $indexes = $this->search_request('/index/network_id/get_all?network_id=' . $network_id);
-      if (is_array($indexes) && !empty($indexes)) {
-        foreach ($indexes as $index) {
-          $result[] = array(
-            'balancer' => $index['host'],
-            'core_id' => $index['name'],
-            'version' => 'v3'
-          );
-        }
+    $indexes = $this->search_request('/index/network_id/get_all?network_id=' . $network_id);
+    if (is_array($indexes) && !empty($indexes)) {
+      foreach ($indexes as $index) {
+        $result[] = array(
+          'balancer' => $index['host'],
+          'core_id' => $index['name'],
+          'version' => 'v3'
+        );
       }
+    }
+    if ($result) {
       $this->cache->set('acquia_search.v3indexes', $result, time() + (24 * 60 * 60));
     }
 
@@ -80,16 +80,17 @@ class AcquiaSearchV3ApiClient {
    *   Search v3 index keys.
    */
   public function getKeys($core_id, $network_id) {
-    $keys = FALSE;
     if ($cache = $this->cache->get('acquia_search.v3keys')) {
       if (!empty($cache->data)) {
-        $keys = $cache->data;
+        return $cache->data;
       }
     }
-    else {
-      $keys = $this->search_request('/index/key?index_name=' . $core_id . '&network_id=' . $network_id);
+
+    $keys = $this->search_request('/index/key?index_name=' . $core_id . '&network_id=' . $network_id);
+    if ($keys) {
       $this->cache->set('acquia_search.v3keys', $keys, time() + (24 * 60 * 60));
     }
+
     return $keys;
   }
 

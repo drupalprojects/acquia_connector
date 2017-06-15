@@ -536,10 +536,13 @@ function acquia_search_get_core_service() {
     $available_cores = $subscription['heartbeat_data']['search_cores'];
   }
 
-  $search_v3_client = acquia_search_get_v3_client();
-  $search_v3_cores = $search_v3_client->getSearchV3Indexes($acquia_identifier);
-  if ($search_v3_cores) {
-    $available_cores = array_merge($available_cores, $search_v3_cores);
+  $search_v3_enabled = \Drupal::config('acquia_search.settings')->get('search_v3_enabled');
+  if ($search_v3_enabled) {
+    $search_v3_client = acquia_search_get_v3_client();
+    $search_v3_cores = $search_v3_client->getSearchV3Indexes($acquia_identifier);
+    if ($search_v3_cores) {
+      $available_cores = array_merge($available_cores, $search_v3_cores);
+    }
   }
 
   $core_service = new PreferredSearchCoreService($acquia_identifier, $ah_env, $sites_foldername, $ah_db_name, $available_cores);
@@ -628,8 +631,8 @@ function acquia_search_theme_search_api_server($variables) {
  * @return AcquiaSearchV3ApiClient
  */
 function acquia_search_get_v3_client() {
-  $search_v3_host = \Drupal::state()->get('acquia_search.api_host') ? \Drupal::state()->get('acquia_search.api_host') : 'https://api.sr.acquia.com';
-  $search_v3_api_key = \Drupal::state()->get('acquia_search.api_key');
+  $search_v3_host = \Drupal::state()->get('acquia_search.v3_api_host') ? \Drupal::state()->get('acquia_search.v3_api_host') : 'https://api.sr.acquia.com';
+  $search_v3_api_key = \Drupal::state()->get('acquia_search.v3_api_key');
   $drupal_http_client = \Drupal::service('http_client');
   $cache = \Drupal::cache();
 

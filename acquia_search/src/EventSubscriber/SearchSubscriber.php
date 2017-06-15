@@ -196,11 +196,14 @@ class SearchSubscriber extends Plugin {
       $env_id = $this->client->getEndpoint()->getKey();
     }
 
-    // Get derived key for search v3 core.
-    $search_v3_index = $this->getSearchV3IndexKeys();
-    if ($search_v3_index) {
-      $this->derivedKey[$env_id] = CryptConnector::createDerivedKey($search_v3_index['product_policies']['salt'], $search_v3_index['key'], $search_v3_index['secret_key']);
-      return $this->derivedKey[$env_id];
+    // Get derived key for search v3 core if enabled.
+    $search_v3_enabled = \Drupal::config('acquia_search.settings')->get('search_v3_enabled');
+    if ($search_v3_enabled) {
+      $search_v3_index = $this->getSearchV3IndexKeys();
+      if ($search_v3_index) {
+        $this->derivedKey[$env_id] = CryptConnector::createDerivedKey($search_v3_index['product_policies']['salt'], $search_v3_index['key'], $search_v3_index['secret_key']);
+        return $this->derivedKey[$env_id];
+      }
     }
 
     if (!isset($this->derivedKey[$env_id])) {
