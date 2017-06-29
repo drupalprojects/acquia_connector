@@ -48,7 +48,7 @@ class AcquiaSearchV3ApiClient {
   public function getSearchV3Indexes($network_id) {
     $result = FALSE;
     if ($cache = $this->cache->get('acquia_search.v3indexes')) {
-      if (!empty($cache->data)) {
+      if (!empty($cache->data) && $cache->expire > time()) {
         return $cache->data;
       }
     }
@@ -81,7 +81,7 @@ class AcquiaSearchV3ApiClient {
    */
   public function getKeys($core_id, $network_id) {
     if ($cache = $this->cache->get('acquia_search.v3keys')) {
-      if (!empty($cache->data)) {
+      if (!empty($cache->data) && $cache->expire > time()) {
         return $cache->data;
       }
     }
