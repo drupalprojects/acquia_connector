@@ -322,10 +322,15 @@ class SearchSubscriber extends Plugin {
     }
 
     $search_v3_client = acquia_search_get_v3_client();
+    if (!$search_v3_client) {
+      return;
+    }
+
     $search_v3_index = $search_v3_client->getKeys($core['core_id'], $core_service->acquia_identifier);
     if (is_array($search_v3_index) && !empty($search_v3_index)) {
       return $search_v3_index;
     }
+
   }
 
 }

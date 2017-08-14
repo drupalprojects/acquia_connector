@@ -46,27 +46,34 @@ class AcquiaSearchV3ApiClient {
    *   Response array or FALSE
    */
   public function getSearchV3Indexes($network_id) {
-    $result = FALSE;
+    $result = array();
     if ($cache = $this->cache->get('acquia_search.v3indexes')) {
-      if (!empty($cache->data) && $cache->expire > time()) {
+      if (is_array($cache->data) && $cache->expire > time()) {
         return $cache->data;
       }
     }
-    $indexes = $this->search_request('/index/network_id/get_all?network_id=' . $network_id);
-    if (is_array($indexes) && !empty($indexes)) {
-      foreach ($indexes as $index) {
-        $result[] = array(
-          'balancer' => $index['host'],
-          'core_id' => $index['name'],
-          'version' => 'v3'
-        );
+    $indexes = $this->searchRequest('/index/network_id/get_all?network_id=' . $network_id);
+    if (is_array($indexes)) {
+      if (!empty($indexes)) {
+        foreach ($indexes as $index) {
+          $result[] = array(
+            'balancer' => $index['host'],
+            'core_id' => $index['name'],
+            'version' => 'v3'
+          );
+        }
       }
-    }
-    if ($result) {
+      // Cache will be set in both cases, 1. when search v3 cores are found and
+      // 2. when there are no search v3 cores but api is reachable.
       $this->cache->set('acquia_search.v3indexes', $result, time() + (24 * 60 * 60));
+      return $result;
+    }
+    else {
+      // When api is not reachable, cache it for 1 minute.
+      $this->cache->set('acquia_search.v3keys', $result, time() + (60));
     }
 
-    return $result;
+    return FALSE;
   }
 
   /**
@@ -86,12 +93,20 @@ class AcquiaSearchV3ApiClient {
       }
     }
 
-    $keys = $this->search_request('/index/key?index_name=' . $core_id . '&network_id=' . $network_id);
+    $keys = $this->searchRequest('/index/key?index_name=' . $core_id . '&network_id=' . $network_id);
     if ($keys) {
+      // Cache will be set in both cases, 1. when search v3 cores are found and
+      // 2. when there are no search v3 cores but api is reachable.
       $this->cache->set('acquia_search.v3keys', $keys, time() + (24 * 60 * 60));
+      return $keys;
+    }
+    else {
+      // When api is not reachable, cache it for 1 minute.
+      $this->cache->set('acquia_search.v3keys', $keys, time() + (60));
     }
 
-    return $keys;
+    return FALSE;
+
   }
 
   /**
@@ -103,7 +118,7 @@ class AcquiaSearchV3ApiClient {
    * @return array|false
    *   Response array or FALSE.
    */
-  public function search_request($path) {
+  public function searchRequest($path) {
     $data = array(
       'host' => $this->search_v3_host,
       'headers' => array(
@@ -126,18 +141,34 @@ class AcquiaSearchV3ApiClient {
       $status_code = $response->getStatusCode();
 
       if ($status_code < 200 || $status_code > 299) {
-        \Drupal::logger('acquia search')->error('Couldn\'t connect to search v3 api: ' . $response->getReasonPhrase());
+        \Drupal::logger('acquia search')->error("Couldn't connect to search v3 API: @message",
+          ['@message' => $response->getReasonPhrase()]);
         return FALSE;
       }
       return $data;
     }
     catch (RequestException $e) {
-      \Drupal::logger('acquia search')->error('Couldn\'t connect to search v3 api: ' . $e->getMessage());
+      if ($e->getCode() == 401) {
+        \Drupal::logger('acquia search')->error("Couldn't connect to search v3 API:
+          Received a 401 response from the API indicating that credentials are incorrect.
+          Please validate your credentials. @message", ['@message' => $e->getMessage()]);
+      }
+      elseif ($e->getCode() == 404) {
+        \Drupal::logger('acquia search')->error("Couldn't connect to search v3 API:
+          Received a 404 response from the API indicating that the api host is incorrect.
+          Please validate your host. @message", ['@message' => $e->getMessage()]);
+      }
+      else {
+        \Drupal::logger('acquia search')->error("Couldn't connect to search v3 API: Please
+        validate your api host and credentials. @message", ['@message' => $e->getMessage()]);
+      }
     }
     catch (\Exception $e) {
-      \Drupal::logger('acquia search')->error('Couldn\'t connect to search v3 api: ' . $e->getMessage());
+      \Drupal::logger('acquia search')->error("Couldn't connect to search v3 API: @message",
+        ['@message' => $e->getMessage()]);
     }
 
     return FALSE;
   }
+
 }

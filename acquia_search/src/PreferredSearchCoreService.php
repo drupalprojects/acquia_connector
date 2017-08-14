@@ -98,6 +98,12 @@ class PreferredSearchCoreService {
    *     ].
    */
   public function getPreferredCore() {
+    static $preferred_core;
+
+    if (!empty($preferred_core)) {
+      return $preferred_core;
+    }
+
     $expected_cores = $this->getListOfPossibleCores();
     $available_cores_sorted = $this->sortCores($this->available_cores);
 
@@ -106,7 +112,8 @@ class PreferredSearchCoreService {
       foreach ($available_cores_sorted as $available_core) {
 
         if ($expected_core == $available_core['core_id']) {
-          return $available_core;
+          $preferred_core = $available_core;
+          return $preferred_core;
         }
 
       }
@@ -134,7 +141,6 @@ class PreferredSearchCoreService {
     });
 
     return array_merge($v3_cores, $regular_cores);
-
   }
 
   /**
