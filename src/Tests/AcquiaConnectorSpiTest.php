@@ -168,10 +168,10 @@ class AcquiaConnectorSpiTest extends WebTestBase {
         return 'confirm the action you wish to take';
 
       case 'block-site-message':
-        return 'This site has been blocked from sending profile data to Acquia Cloud.';
+        return 'This site has been disabled from sending profile data to Acquia Cloud.';
 
       case 'unblock-site':
-        return 'Unblock this site';
+        return 'Enable this site';
 
       case 'acquia-hosted':
         return 'Your site is now Acquia hosted.';
@@ -260,7 +260,7 @@ class AcquiaConnectorSpiTest extends WebTestBase {
 
     $submit_button = 'Save configuration';
     $this->drupalPostForm($this->environmentChangePath, $edit_fields, $submit_button);
-    $this->assertText('Your site has been unblocked and is sending data to Acquia Cloud', 'Unblock site');
+    $this->assertText('Your site has been enabled and is sending data to Acquia Cloud', 'Enable site');
     $this->assertText($this->acquiaSPIStrings('spi-data-sent'), 'SPI data was sent');
     $this->assertNoText($this->acquiaSPIStrings('spi-not-sent'), 'SPI does not say "data has not been sent"');
 

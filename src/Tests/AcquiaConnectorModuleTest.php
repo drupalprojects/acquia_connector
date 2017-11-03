@@ -503,17 +503,17 @@ class AcquiaConnectorModuleTest extends WebTestBase {
     ];
     $submit_button = 'Save configuration';
     $this->drupalPostForm($this->environmentChangePath, $edit_fields, $submit_button);
-    $this->assertText('This site has been blocked from sending profile data to Acquia Cloud.');
-    $this->assertText('You have blocked your site from sending data to Acquia Cloud.');
+    $this->assertText('This site has been disabled from sending profile data to Acquia Cloud.');
+    $this->assertText('You have disabled your site from sending data to Acquia Cloud.');
     // Test unblock site.
-    $this->clickLink('Unblock this site');
-    $this->assertText('The Acquia Connector is blocked and is not sending site profile data to Acquia Cloud for evaluation.');
+    $this->clickLink('Enable this site');
+    $this->assertText('The Acquia Connector is disabled and is not sending site profile data to Acquia Cloud for evaluation.');
     $edit_fields = [
       'env_change_action[unblock]' => TRUE,
     ];
     $submit_button = 'Save configuration';
     $this->drupalPostForm($this->environmentChangePath, $edit_fields, $submit_button);
-    $this->assertText('Your site has been unblocked and is sending data to Acquia Cloud.');
+    $this->assertText('Your site has been enabled and is sending data to Acquia Cloud.');
     $this->clickLink('manually send SPI data');
     $this->assertText('A change has been detected in your site environment. Please check the Acquia SPI status on your Status Report page for more information.');
     // Test update existing site.

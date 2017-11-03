@@ -133,14 +133,14 @@ class NspiController extends ControllerBase {
           case 'unblock':
             \Drupal::state()->delete('acqtest_site_blocked');
             $result['body']['spi_error'] = '';
-            $result['body']['nspi_messages'][] = t('Your site has been unblocked and is sending data to Acquia Cloud.');
+            $result['body']['nspi_messages'][] = t('Your site has been enabled and is sending data to Acquia Cloud.');
             return new JsonResponse($result);
 
           break;
           case 'block':
             \Drupal::state()->set('acqtest_site_blocked', TRUE);
             $result['body']['spi_error'] = '';
-            $result['body']['nspi_messages'][] = t('You have blocked your site from sending data to Acquia Cloud.');
+            $result['body']['nspi_messages'][] = t('You have disabled your site from sending data to Acquia Cloud.');
             return new JsonResponse($result);
 
           break;
@@ -191,7 +191,7 @@ class NspiController extends ControllerBase {
     $site_blocked = \Drupal::state()->get('acqtest_site_blocked');
 
     if ($site_blocked) {
-      $changes['changes']['blocked'] = (string) t('Your site has been unblocked.');
+      $changes['changes']['blocked'] = (string) t('Your site has been enabled.');
     }
     else {
 

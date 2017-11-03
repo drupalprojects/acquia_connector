@@ -42,9 +42,9 @@ class SpiChangeForm extends ConfigFormBase {
     elseif ($blocked) {
       $form['env_change_action'] = array(
         '#type' => 'checkboxes',
-        '#title' => $this->t('The Acquia Connector is blocked and is not sending site profile data to Acquia Cloud for evaluation.'),
+        '#title' => $this->t('The Acquia Connector is disabled and is not sending site profile data to Acquia Cloud for evaluation.'),
         '#options' => array(
-          'unblock' => $this->t('Unblock this site and send data to Acquia Cloud.'),
+          'unblock' => $this->t('Enable this site and send data to Acquia Cloud.'),
         ),
         '#required' => TRUE,
       );
@@ -66,7 +66,7 @@ class SpiChangeForm extends ConfigFormBase {
         '#type' => 'radios',
         '#title' => $this->t('How would you like to proceed?'),
         '#options' => array(
-          'block' => $this->t('Block this site from sending profile data to Acquia Cloud.'),
+          'block' => $this->t('Disable this site from sending profile data to Acquia Cloud.'),
           'update' => $this->t('Update existing site with these changes.'),
           'create' => $this->t('Track this as a new site on Acquia Cloud.'),
         ),
