@@ -74,16 +74,6 @@ function acquia_connector_test_xmlrpc() {
       array('struct', 'array'),
       t('Test returns subscription name for an indentifer.')),
     array(
-      'acquia.agent.cloud.migration.environments',
-      'acquia_connector_test_cloud_migration_environments',
-      array('struct', 'array'),
-      t('Test returns environments available for site import.')),
-    array(
-      'acquia.agent.cloud.migration.complete',
-      'acquia_connector_test_migration_complete',
-      array('struct', 'array'),
-      t('Test complete final migration')),
-    array(
       'acquia.nspi.update',
       'acquia_connector_test_nspi_update',
       array('array', 'array'),
@@ -251,45 +241,6 @@ function acquia_connector_test_subscription_name($data) {
   else {
     return xmlrpc_error(ACQTEST_SUBSCRIPTION_VALIDATION_ERROR, t('Invalid arguments'));
   }
-}
-
-function acquia_connector_test_cloud_migration_environments($data) {
-  $fields = array(
-    'time' => 'is_numeric',
-    'nonce' => 'is_string',
-    'hash' => 'is_string',
-  );
-  $result = acquia_connector_test_basic_authenticator($fields, $data);
-  if (!empty($result->is_error)) {
-    return $result;
-  }
-  if (!empty($data['body']['identifier'])) {
-    if (strpos($data['body']['identifier'], 'TEST_') !== 0) {
-      return xmlrpc_error(ACQTEST_SUBSCRIPTION_VALIDATION_ERROR, t('Subscription not found'));
-    }
-  }
-  else {
-    return xmlrpc_error(ACQTEST_SUBSCRIPTION_VALIDATION_ERROR, t('Invalid arguments'));
-  }
-  if ($data['body']['identifier'] == ACQTEST_ERROR_ID) {
-    return xmlrpc_error(ACQTEST_SUBSCRIPTION_SITE_NOT_FOUND, t("Hosting not available under your subscription. Upgrade your subscription to continue with import."));
-  }
-  $result = array();
-  $result['is_error'] = FALSE;
-  foreach (array('dev' => 'Development', 'test' => 'Stage', 'prod' => 'Production') as $key => $name) {
-    $result['body']['environments'][$key] = array(
-      'url' => url('system/acquia-connector-test-upload/AH_UPLOAD', array('absolute' => TRUE)),
-      'stage' => $key,
-      'nonce' => 'nonce',
-      'secret' => 'secret',
-      'site_name' => $name,
-    );
-  }
-  return $result;
-}
-
-function acquia_connector_test_migration_complete($data) {
-  // return array
 }
 
 function acquia_connector_test_nspi_update($data) {
@@ -507,14 +458,6 @@ function acquia_connector_test_xmlrpc_server_emulator($method, $data){
 
     case 'acquia.agent.subscription':
       $result = acquia_connector_test_subscription($data);
-      break;
-
-    case 'acquia.agent.cloud.migration.environments':
-      $result = acquia_connector_test_cloud_migration_environments($data);
-      break;
-
-    case 'acquia.agent.cloud.migration.complete':
-      $result = acquia_connector_test_migration_complete($data);
       break;
 
     case 'acquia.nspi.update':
