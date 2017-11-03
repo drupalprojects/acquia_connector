@@ -23,9 +23,9 @@ function acquia_spi_environment_change_form($form, &$form_state) {
   elseif ($blocked) {
     $form['env_change_action'] = array(
       '#type' => 'checkboxes',
-      '#title' => t('The Acquia Connector is blocked and is not sending site profile data to Acquia Cloud for evaluation.'),
+      '#title' => t('The Acquia Connector is disabled and is not sending site profile data to Acquia Cloud for evaluation.'),
       '#options' => array(
-        'unblock' => t('Unblock this site and send data to Acquia Cloud.'),
+        'unblock' => t('Enable this site and send data to Acquia Cloud.'),
       ),
       '#required' => TRUE,
     );
@@ -41,7 +41,7 @@ function acquia_spi_environment_change_form($form, &$form_state) {
       '#type' => 'radios',
       '#title' => t('How would you like to proceed?'),
       '#options' => array(
-        'block' => t('Block this site from sending profile data to Acquia Insight.'),
+        'block' => t('Disable this site from sending profile data to Acquia Insight.'),
         'update' => t('Update existing site with these changes.'),
         'create' => t('Track this as a new site on Acquia Insight.'),
       ),
