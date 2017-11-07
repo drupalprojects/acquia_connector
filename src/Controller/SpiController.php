@@ -1342,7 +1342,7 @@ class SpiController extends ControllerBase {
     }
 
     $spi_environment_changes = isset($spi_response['body']['spi_environment_changes']) ? Json::decode($spi_response['body']['spi_environment_changes']) : array();
-    $site_blocked = array_key_exists('blocked', $spi_environment_changes);
+    $site_blocked = array_key_exists('blocked', $spi_environment_changes) || !empty($spi_response['site_revoked']);
 
     // Address any actions taken based on a site environment change.
     if (!empty($changed_action) || $site_blocked) {
