@@ -12,7 +12,7 @@ function acquia_spi_environment_change_form($form, &$form_state) {
   $form               = array();
   $blocked            = variable_get('acquia_spi_blocked', FALSE);
   $acquia_hosted      = acquia_spi_check_acquia_hosted();
-  $env_changes        = variable_get('acquia_spi_environment_changes');
+  $env_changes        = variable_get('acquia_spi_environment_changes', array());
   $env_changes_list   = theme('item_list', array('items' => $env_changes));
   $off_acquia_hosting = array_key_exists('acquia_hosted', $env_changes) && !acquia_spi_check_acquia_hosted();
 

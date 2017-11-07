@@ -257,6 +257,28 @@ class AcquiaSPITestCase extends DrupalWebTestCase {
     $this->assertTrue(!isset($vars['user_admin_role']), 'user_admin_role not included in SPI data');
   }
 
+  public function testAcquiaSPIRevokedInstall() {
+
+    // Confirm the site is not blocked yet.
+    $this->assertFalse(variable_get('acquia_spi_blocked', FALSE));
+
+    // Connect using credentials for a revoked site.
+    $edit_fields = array(
+      'acquia_identifier' => ACQTEST_REVOKED_ID,
+      'acquia_key' => ACQTEST_REVOKED_KEY,
+    );
+    $submit_button = 'Connect';
+    $this->drupalPost($this->credentials_path, $edit_fields, $submit_button);
+
+    // Try to send SPI data
+    $spi_data = acquia_spi_get();
+    $response = acquia_spi_send_data($spi_data);
+    acquia_spi_handle_server_response($response);
+
+    // Confirm the site has been blocked.
+    $this->assertTrue(variable_get('acquia_spi_blocked', FALSE));
+  }
+
   public function testAcquiaSPIMessages() {
     $this->connectSite();
     $edit_fields = array(

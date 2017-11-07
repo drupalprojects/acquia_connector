@@ -28,6 +28,8 @@ define('ACQTEST_ERROR_ID', 'TEST_AcquiaConnectorTestIDErr');
 define('ACQTEST_ERROR_KEY', 'TEST_AcquiaConnectorTestKeyErr');
 define('ACQTEST_EXPIRED_ID', 'TEST_AcquiaConnectorTestIDExp');
 define('ACQTEST_EXPIRED_KEY', 'TEST_AcquiaConnectorTestKeyExp');
+define('ACQTEST_REVOKED_ID', 'TEST_AcquiaConnectorTestIDRevoked');
+define('ACQTEST_REVOKED_KEY', 'TEST_AcquiaConnectorTestKeyRevoked');
 define('ACQTEST_503_ID', 'TEST_AcquiaConnectorTestID503');
 define('ACQTEST_503_KEY', 'TEST_AcquiaConnectorTestKey503');
 define('ACQTEST_site_uuid', 'TEST_cdbd59f5-ca7e-4652-989b-f9e46d309613');
@@ -254,7 +256,7 @@ function acquia_connector_test_nspi_update($data) {
     return $result;
   }
   if (!empty($data['authenticator']['identifier'])) {
-    if ($data['authenticator']['identifier'] != ACQTEST_ID && $data['authenticator']['identifier'] != ACQTEST_ERROR_ID) {
+    if (!in_array($data['authenticator']['identifier'], [ACQTEST_ID, ACQTEST_ERROR_ID, ACQTEST_REVOKED_ID])) {
       return xmlrpc_error(ACQTEST_SUBSCRIPTION_VALIDATION_ERROR, t('Subscription not found'));
     }
     if ($data['authenticator']['identifier'] == ACQTEST_ERROR_ID) {
@@ -262,8 +264,12 @@ function acquia_connector_test_nspi_update($data) {
     }
     else {
       $result = acquia_connector_test_validate_authenticator($data);
+
       $spi_data = $data['body'];
-      $result->body = array('spi_data_received' => TRUE);
+      $result->body = array(
+        'spi_data_received' => TRUE,
+        'site_revoked' => $data['authenticator']['identifier'] == ACQTEST_REVOKED_ID,
+      );
       if (isset($spi_data['spi_def_update'])) {
         $result->body['update_spi_definition'] = TRUE;
       }
@@ -371,6 +377,9 @@ function acquia_connector_test_validate_authenticator($data) {
       break;
     case ACQTEST_503_ID:
       $key = ACQTEST_503_KEY;
+      break;
+    case ACQTEST_REVOKED_ID:
+      $key = ACQTEST_REVOKED_KEY;
       break;
     default:
       $key = ACQTEST_ERROR_KEY;

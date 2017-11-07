@@ -512,7 +512,7 @@ function acquia_spi_handle_server_response($spi_response) {
   variable_set('acquia_spi_environment_changed_action', '');
   $site_uuid = variable_get('acquia_spi_site_uuid', NULL);
   $spi_environment_changes = isset($spi_response['spi_environment_changes']) ? drupal_json_decode($spi_response['spi_environment_changes']) : array();
-  $site_blocked = array_key_exists('blocked', $spi_environment_changes);
+  $site_blocked = array_key_exists('blocked', $spi_environment_changes) || !empty($spi_response['site_revoked']);
 
   // Set site_uuid if it changed or if it hasn't been previously captured.
   if (isset($spi_response['site_uuid']) && (is_null($site_uuid) || $spi_response['site_uuid'] != $site_uuid)) {
