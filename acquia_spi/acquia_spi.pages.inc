@@ -92,8 +92,8 @@ function acquia_spi_environment_change_form($form, &$form_state) {
     );
 
     if ($acquia_hosted) {
-      $form['identification']['site']['name']['#disabled'] = TRUE;
       $form['identification']['site']['machine_name']['#disabled'] = TRUE;
+      $form['identification']['site']['machine_name']['#default_value'] = acquia_spi_get_acquia_hosted_machine_name();
     }
     elseif ($off_acquia_hosting) {
       unset($form['env_change_action']['#options']['block']);
