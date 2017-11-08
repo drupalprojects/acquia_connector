@@ -272,8 +272,7 @@ class SpiController extends ControllerBase {
    *   1 if they are removed, 0 if they aren't.
    */
   private function checkFilesPresent() {
-    $store = $this->dataStoreGet(array('platform'));
-    $server = (!empty($store) && isset($store['platform'])) ? $store['platform']['php_quantum']['SERVER'] : \Drupal::request()->server->all();
+    $server = \Drupal::request()->server->all();
     $files_exist = FALSE;
     $files_to_remove = array('CHANGELOG.txt', 'COPYRIGHT.txt', 'INSTALL.mysql.txt', 'INSTALL.pgsql.txt', 'INSTALL.txt', 'LICENSE.txt',
       'MAINTAINERS.txt', 'README.txt', 'UPGRADE.txt', 'PRESSFLOW.txt', 'install.php',
@@ -828,8 +827,7 @@ class SpiController extends ControllerBase {
    *   An array containing some detail about the version
    */
   private function getVersionInfo() {
-    $store = $this->dataStoreGet(array('platform'));
-    $server = (!empty($store) && isset($store['platform'])) ? $store['platform']['php_quantum']['SERVER'] : \Drupal::request()->server->all();
+    $server = \Drupal::request()->server->all();
     $ver = array();
 
     $ver['base_version'] = \Drupal::VERSION;
@@ -931,10 +929,6 @@ class SpiController extends ControllerBase {
 
     if (isset($webserver[1]) && stristr($webserver[1], 'Apache') && function_exists('apache_get_version')) {
       $webserver[2] = apache_get_version();
-      $apache_modules = apache_get_modules();
-    }
-    else {
-      $apache_modules = '';
     }
 
     // Get some basic PHP vars.
@@ -951,7 +945,6 @@ class SpiController extends ControllerBase {
       'session.cookie_domain' => ini_get('session.cookie_domain'),
       'session.cookie_lifetime' => ini_get('session.cookie_lifetime'),
       'newrelic.appname' => ini_get('newrelic.appname'),
-      'SERVER' => $server->all(),
       'sapi' => php_sapi_name(),
     );
 
@@ -959,7 +952,6 @@ class SpiController extends ControllerBase {
       'php'               => PHP_VERSION,
       'webserver_type'    => isset($webserver[1]) ? $webserver[1] : '',
       'webserver_version' => isset($webserver[2]) ? $webserver[2] : '',
-      'apache_modules'    => $apache_modules,
       'php_extensions'    => get_loaded_extensions(),
       'php_quantum'       => $php_quantum,
       'database_type'     => (string) $db_tasks->name(),
@@ -968,100 +960,9 @@ class SpiController extends ControllerBase {
       // php_uname() only accepts one character, so we need to concatenate
       // ourselves.
       'system_version'    => php_uname('r') . ' ' . php_uname('v') . ' ' . php_uname('m') . ' ' . php_uname('n'),
-      'mysql'             => (Database::getConnection()->driver() == 'mysql') ? self::getPlatformMysqlData() : array(),
     );
 
     return $platform;
-  }
-
-  /**
-   * Gather mysql specific information.
-   *
-   * @return array
-   *   An associative array keyed by a mysql information type.
-   */
-  private static function getPlatformMysqlData() {
-    $connection = Database::getConnection('default');
-    $result = $connection->query('SHOW GLOBAL STATUS', array(), array())->fetchAll();
-
-    $ret = array();
-    if (empty($result)) {
-      return $ret;
-    }
-
-    foreach ($result as $record) {
-      if (!isset($record->Variable_name)) {
-        continue;
-      }
-      switch ($record->Variable_name) {
-        case 'Table_locks_waited':
-          $ret['Table_locks_waited'] = $record->Value;
-          break;
-
-        case 'Slow_queries':
-          $ret['Slow_queries'] = $record->Value;
-          break;
-
-        case 'Qcache_hits':
-          $ret['Qcache_hits'] = $record->Value;
-          break;
-
-        case 'Qcache_inserts':
-          $ret['Qcache_inserts'] = $record->Value;
-          break;
-
-        case 'Qcache_queries_in_cache':
-          $ret['Qcache_queries_in_cache'] = $record->Value;
-          break;
-
-        case 'Qcache_lowmem_prunes':
-          $ret['Qcache_lowmem_prunes'] = $record->Value;
-          break;
-
-        case 'Open_tables':
-          $ret['Open_tables'] = $record->Value;
-          break;
-
-        case 'Opened_tables':
-          $ret['Opened_tables'] = $record->Value;
-          break;
-
-        case 'Select_scan':
-          $ret['Select_scan'] = $record->Value;
-          break;
-
-        case 'Select_full_join':
-          $ret['Select_full_join'] = $record->Value;
-          break;
-
-        case 'Select_range_check':
-          $ret['Select_range_check'] = $record->Value;
-          break;
-
-        case 'Created_tmp_disk_tables':
-          $ret['Created_tmp_disk_tables'] = $record->Value;
-          break;
-
-        case 'Created_tmp_tables':
-          $ret['Created_tmp_tables'] = $record->Value;
-          break;
-
-        case 'Handler_read_rnd_next':
-          $ret['Handler_read_rnd_next'] = $record->Value;
-          break;
-
-        case 'Sort_merge_passes':
-          $ret['Sort_merge_passes'] = $record->Value;
-          break;
-
-        case 'Qcache_not_cached':
-          $ret['Qcache_not_cached'] = $record->Value;
-          break;
-
-      }
-    }
-
-    return $ret;
   }
 
   /**

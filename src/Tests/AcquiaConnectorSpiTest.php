@@ -43,14 +43,12 @@ class AcquiaConnectorSpiTest extends WebTestBase {
     'php',
     'webserver_type',
     'webserver_version',
-    'apache_modules',
     'php_extensions',
     'php_quantum',
     'database_type',
     'database_version',
     'system_type',
     'system_version',
-    'mysql',
   ];
   protected $spiDataKeys = [
     'spi_data_version',
@@ -403,9 +401,6 @@ class AcquiaConnectorSpiTest extends WebTestBase {
       $this->assertTrue(empty($diff), 'Module elements have expected keys');
       $diff = array_diff(array_keys($spi_data['platform']), $this->platformKeys);
       $this->assertTrue(empty($diff), 'Platform contains expected keys');
-      $this->assertTrue(isset($spi_data['platform']['php_quantum']['SERVER']), 'Global server data included in SPI data');
-      $this->assertTrue(isset($spi_data['platform']['php_quantum']['SERVER']['SERVER_SOFTWARE']), 'Server software data set within global server info');
-      $this->assertTrue(isset($spi_data['platform']['mysql']['Select_scan']), 'Mysql info in platform contains an expected key');
       $this->assertTrue(isset($spi_data['file_hashes']['core/includes/database.inc']), 'File hashes array contains an expected key');
       $roles = Json::decode($spi_data['roles']);
       $this->assertTrue(is_array($roles), 'Roles is an array');
