@@ -32,10 +32,6 @@ class AcquiaSPITestCase extends DrupalWebTestCase {
     'last_users',
     'extra_files',
     'ssl_login',
-    'file_hashes',
-    'hashes_md5',
-    'hashes_sha1',
-    'fileinfo',
     'distribution',
     'base_version',
     'build_data',
@@ -184,12 +180,9 @@ class AcquiaSPITestCase extends DrupalWebTestCase {
       $this->assertTrue(empty($diff), 'Module elements have expected keys');
       $diff = array_diff(array_keys($spi_data['platform']), $this->platformKeys);
       $this->assertTrue(empty($diff), 'Platform contains expected keys');
-      $this->assertTrue(isset($spi_data['file_hashes']['includes/database']), 'File hashes array contains an expected key');
       $roles = drupal_json_decode($spi_data['roles']);
       $this->assertTrue(is_array($roles), 'Roles is an array');
       $this->assertTrue(isset($roles[1]) && $roles[1] === 'anonymous user', 'Roles array contains anonymous user');
-      $this->assertTrue(isset($spi_data['fileinfo']['scripts/drupal.sh']), 'Fileinfo contains an expected key');
-      $this->assertTrue(strpos($spi_data['fileinfo']['scripts/drupal.sh'], 'mt') === 0, 'Fileinfo element begins with expected value');
     }
   }
 
