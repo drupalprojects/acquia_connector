@@ -13,7 +13,7 @@ class AcquiaSPITestCase extends DrupalWebTestCase {
   protected $acqtest_machine_name = 'test_name';
 
   // Platform array keys.
-  protected $platformKeys = array('php', 'webserver_type', 'webserver_version', 'apache_modules', 'php_extensions', 'php_quantum', 'database_type', 'database_version', 'system_type', 'system_version', 'mysql');
+  protected $platformKeys = array('php', 'webserver_type', 'webserver_version', 'php_extensions', 'php_quantum', 'database_type', 'database_version', 'system_type', 'system_version');
   protected $spiDataKeys = array(
     'spi_data_version',
     'name',
@@ -184,9 +184,6 @@ class AcquiaSPITestCase extends DrupalWebTestCase {
       $this->assertTrue(empty($diff), 'Module elements have expected keys');
       $diff = array_diff(array_keys($spi_data['platform']), $this->platformKeys);
       $this->assertTrue(empty($diff), 'Platform contains expected keys');
-      $this->assertTrue(isset($spi_data['platform']['php_quantum']['SERVER']), 'Global server data included in SPI data');
-      $this->assertTrue(isset($spi_data['platform']['php_quantum']['SERVER']['SERVER_SOFTWARE']), 'Server software data set within global server info');
-      $this->assertTrue(isset($spi_data['platform']['mysql']['Select_scan']), 'Mysql info in platform contains an expected key');
       $this->assertTrue(isset($spi_data['file_hashes']['includes/database']), 'File hashes array contains an expected key');
       $roles = drupal_json_decode($spi_data['roles']);
       $this->assertTrue(is_array($roles), 'Roles is an array');
