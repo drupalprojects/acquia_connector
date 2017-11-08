@@ -238,9 +238,9 @@ class AcquiaConnectorModuleTest extends WebTestBase {
     $this->writeSettings($settings);
     sleep(10);
     $this->drupalGet($this->settingsPath);
-    $elements = $this->xpath('//input[@name=:name]', [':name' => 'name']);
+    $elements = $this->xpath('//input[@name=:name]', [':name' => 'machine_name']);
     foreach ($elements as $element) {
-      $this->assertIdentical((string) $element['disabled'], 'disabled', 'Name field is disabled.');
+      $this->assertIdentical((string) $element['disabled'], 'disabled', 'Machine name field is disabled.');
     }
 
     $this->disconnectSite();

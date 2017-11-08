@@ -152,15 +152,13 @@ class SettingsForm extends ConfigFormBase {
       '#title' => $this->t('Name'),
       '#maxlength' => 255,
       '#required' => TRUE,
-      '#default_value' => $config->get('spi.site_name'),
+      '#default_value' => $config->get('spi.site_name') ?: \Drupal::service('acquia_connector.spi')->getAcquiaHostedName(),
     );
 
     $acquia_hosted = \Drupal::service('acquia_connector.spi')->checkAcquiaHosted();
 
     if ($acquia_hosted) {
-      $form['identification']['#description'] = $this->t('Acquia hosted sites are automatically provided with a name and machine name.');
-      $form['identification']['site']['name']['#default_value'] = \Drupal::service('acquia_connector.spi')->getAcquiaHostedName();
-      $form['identification']['site']['name']['#disabled'] = TRUE;
+      $form['identification']['#description'] = $this->t('Acquia hosted sites are automatically provided with a machine name.');
     }
 
     $form['identification']['site']['machine_name'] = array(
@@ -176,7 +174,7 @@ class SettingsForm extends ConfigFormBase {
     );
 
     if ($acquia_hosted) {
-      $form['identification']['site']['machine_name']['#default_value'] = \Drupal::service('acquia_connector.spi')->getAcquiaHostedMachineName();
+      $form['identification']['site']['machine_name']['#default_value'] = $this->config('acquia_connector.settings')->get('spi.site_machine_name') ?: \Drupal::service('acquia_connector.spi')->getAcquiaHostedMachineName();
       $form['identification']['site']['machine_name']['#disabled'] = TRUE;
     }
 

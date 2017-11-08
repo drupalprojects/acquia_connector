@@ -64,6 +64,8 @@ class SpiController extends ControllerBase {
    *   An associative array keyed by types of information.
    */
   public function get($method = '') {
+    $config = \Drupal::configFactory()->getEditable('acquia_connector.settings');
+
     // Get the Drupal version.
     $drupal_version = $this->getVersionInfo();
 
@@ -76,22 +78,29 @@ class SpiController extends ControllerBase {
     }
 
     $acquia_hosted = $this->checkAcquiaHosted();
+    $environment = $this->config('acquia_connector.settings')->get('spi.site_environment');
+    $env_detection_enabled = $this->config('acquia_connector.settings')->get('spi.env_detection_enabled');
     if ($acquia_hosted) {
-      $config = \Drupal::configFactory()->getEditable('acquia_connector.settings');
-      $name = $this->getAcquiaHostedName();
-      if ($name != $this->config('acquia_connector.settings')->get('spi.site_name')) {
-        $config->set('spi.site_name', $name);
-      }
-
-      $machine_name = $this->getAcquiaHostedMachineName();
-      if ($machine_name != $this->config('acquia_connector.settings')->get('spi.site_machine_name')) {
-        $config->set('spi.site_machine_name', $machine_name);
+      if ($environment != $_SERVER['AH_SITE_ENVIRONMENT']) {
+        $config->set('spi.site_environment', $_SERVER['AH_SITE_ENVIRONMENT']);
+        $environment = $_SERVER['AH_SITE_ENVIRONMENT'];
+        if ($env_detection_enabled) {
+          $config->set('spi.site_machine_name', $this->getAcquiaHostedMachineName());
+        }
       }
     }
     else {
-      $name = $this->config('acquia_connector.settings')->get('spi.site_name');
-      $machine_name = $this->config('acquia_connector.settings')->get('spi.site_machine_name');
+      if ($environment) {
+        $config->set('spi.site_environment', NULL);
+      }
+      $environment = NULL;
     }
+
+    if ($env_detection_enabled === NULL) {
+      $config->set('spi.env_detection_enabled', TRUE);
+    }
+
+    $config->save();
 
     $spi = array(
     // Used in HMAC validation.
@@ -102,8 +111,9 @@ class SpiController extends ControllerBase {
       'site_uuid'          => $this->config('acquia_connector.settings')->get('spi.site_uuid'),
       'env_changed_action' => $this->config('acquia_connector.settings')->get('spi.environment_changed_action'),
       'acquia_hosted'      => $acquia_hosted,
-      'name'               => $name,
-      'machine_name'       => $machine_name,
+      'name'               => $this->config('acquia_connector.settings')->get('spi.site_name'),
+      'machine_name'       => $this->config('acquia_connector.settings')->get('spi.site_machine_name'),
+      'environment'        => $environment,
       'modules'            => $this->getModules(),
       'platform'           => $platform,
       'quantum'            => $this->getQuantum(),
@@ -317,7 +327,7 @@ class SpiController extends ControllerBase {
       $uuid = new StatusController();
       $sub_uuid = str_replace('-', '_', $uuid->getIdFromSub($sub_data));
 
-      return $sub_uuid . '__' . $_SERVER['AH_SITE_NAME'];
+      return $sub_uuid . '__' . $_SERVER['AH_SITE_NAME'] . '__' . uniqid();
     }
   }
 

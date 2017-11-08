@@ -112,8 +112,8 @@ class SpiChangeForm extends ConfigFormBase {
       );
 
       if ($acquia_hosted) {
-        $form['identification']['site']['name']['#disabled'] = TRUE;
         $form['identification']['site']['machine_name']['#disabled'] = TRUE;
+        $form['identification']['site']['machine_name']['#default_value'] = \Drupal::service('acquia_connector.spi')->getAcquiaHostedMachineName();
       }
       elseif ($off_acquia_hosting) {
         unset($form['env_change_action']['#options']['block']);
