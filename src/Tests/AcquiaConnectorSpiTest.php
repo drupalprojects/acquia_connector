@@ -65,10 +65,6 @@ class AcquiaConnectorSpiTest extends WebTestBase {
     'last_users',
     'extra_files',
     'ssl_login',
-    'file_hashes',
-    'hashes_md5',
-    'hashes_sha1',
-    'fileinfo',
     'distribution',
     'base_version',
     'build_data',
@@ -401,12 +397,9 @@ class AcquiaConnectorSpiTest extends WebTestBase {
       $this->assertTrue(empty($diff), 'Module elements have expected keys');
       $diff = array_diff(array_keys($spi_data['platform']), $this->platformKeys);
       $this->assertTrue(empty($diff), 'Platform contains expected keys');
-      $this->assertTrue(isset($spi_data['file_hashes']['core/includes/database.inc']), 'File hashes array contains an expected key');
       $roles = Json::decode($spi_data['roles']);
       $this->assertTrue(is_array($roles), 'Roles is an array');
       $this->assertTrue(isset($roles) && array_key_exists('anonymous', $roles), 'Roles array contains anonymous user');
-      $this->assertTrue(isset($spi_data['fileinfo']['core/scripts/drupal.sh']), 'Fileinfo contains an expected key');
-      $this->assertTrue(strpos($spi_data['fileinfo']['core/scripts/drupal.sh'], 'mt') === 0, 'Fileinfo element begins with expected value');
     }
   }
 
