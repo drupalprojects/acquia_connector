@@ -1082,10 +1082,10 @@ class SpiController extends ControllerBase {
       if ($changed_action == 'create' && isset($spi_response['body']['site_uuid'])) {
         $config_set->set('spi.site_uuid', $spi_response['body']['site_uuid'])->save();
       }
-      elseif (($changed_action == 'block' && isset($spi_response['body']['spi_error']) && empty($spi_response['body']['spi_error'])) || $site_blocked) {
+      elseif (($changed_action == 'block' && array_key_exists('spi_error', $spi_response['body']) && empty($spi_response['body']['spi_error'])) || $site_blocked) {
         $config_set->set('spi.blocked', TRUE)->save();
       }
-      elseif ($changed_action == 'unblock' && isset($spi_response['body']['spi_error']) && empty($spi_response['body']['spi_error'])) {
+      elseif ($changed_action == 'unblock' && array_key_exists('spi_error', $spi_response['body']) && empty($spi_response['body']['spi_error'])) {
         $config_set->set('spi.blocked', FALSE)->save();
       }
 
