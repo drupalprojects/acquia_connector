@@ -534,7 +534,7 @@ function acquia_spi_handle_server_response($spi_response) {
 
     // If there were no errors, clear any pending actions.
     if (empty($spi_response['spi_error'])) {
-      variable_set('acquia_spi_environment_changes', '');
+      variable_set('acquia_spi_environment_changes', array());
     }
   }
 
