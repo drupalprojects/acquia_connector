@@ -107,7 +107,7 @@ function acquia_agent_requirements($phase) {
       }
       else {
         $subscription = variable_get('acquia_subscription_data', array('active' => FALSE));
-        $href = isset($subscription['href']) ? $subscription['href'] . '/health' : 'http://acquia.com/network';
+        $href = isset($subscription['uuid']) ? 'https://cloud.acquia.com/app/develop/applications/' . $subscription['uuid'] : 'https://cloud.acquia.com';
         $requirements['acquia_subscription_status'] = array(
           'title' => t('Acquia subscription status'),
           'severity' => REQUIREMENT_WARNING,
