@@ -134,7 +134,7 @@ function acquia_connector_requirements($phase) {
       }
       else {
         $subscription = $config->get('subscription_data');
-        $href = isset($subscription['href']) ? $subscription['href'] . '/health' : 'http://acquia.com/network';
+        $href = isset($subscription['uuid']) ? 'https://cloud.acquia.com/app/develop/applications/' . $subscription['uuid'] : 'https://cloud.acquia.com';
         $requirements['acquia_subscription_status'] = array(
           'title' => t('Acquia Subscription status'),
           'severity' => REQUIREMENT_WARNING,
