@@ -1439,7 +1439,7 @@ function acquia_spi_get_failed_logins() {
  * @return boolean
  */
 function acquia_spi_get_super_name() {
-  $result = db_query("SELECT name FROM {users} WHERE uid = 1 AND (name LIKE '%admin%' OR name LIKE '%root%')")->fetch();
+  $result = db_query("SELECT name FROM {users} WHERE uid = 1 AND (name LIKE '%admin%' OR name LIKE '%root%') AND CHAR_LENGTH(name) < 15")->fetch();
   if ($result) {
     return TRUE;
   }
