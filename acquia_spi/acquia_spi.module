@@ -1783,6 +1783,9 @@ function acquia_spi_approved_set_variables() {
  *   The suggested Acquia Hosted name.
  */
 function acquia_spi_get_acquia_hosted_name() {
+  if (!acquia_spi_check_acquia_hosted()) {
+    return '';
+  }
   $server = acquia_agent_get_server_superglobal();
   return acquia_agent_settings('acquia_subscription_name') . ': ' . $server['AH_SITE_ENVIRONMENT'];
 }
