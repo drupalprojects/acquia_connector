@@ -95,7 +95,7 @@ acquia_connector.settings:
               mapping:
                 optional:
                   type: integer
-                descripiton:
+                description:
                   type: string
         def_waived_vars:
           type: sequence
@@ -155,6 +155,18 @@ acquia_connector.settings:
         cron_interval:
           type: integer
           label: 'Cron interval for failed logins data, sec'
+        site_environment:
+          type: string
+          label: 'Site environment'
+        site_machine_name:
+          type: string
+          label: 'Site machine name'
+        site_uuid:
+          type: string
+          label: 'Site UUID'
+        env_detection_enabled:
+          type: boolean
+          label: 'Is environment detection enabled?'
     mapping:
       type: mapping
       mapping:

@@ -1,6 +1,6 @@
 # Schema for the configuration files of the acquia_search module.
 acquia_search.settings:
-  type: mapping
+  type: config_object
   label: 'Acquia search settings'
   mapping:
     host:
@@ -15,3 +15,7 @@ acquia_search.settings:
     version:
       type: string
       label: 'Acquia Search version'
+
+plugin.plugin_configuration.search_api_solr_connector.solr_acquia_connector:
+  type: plugin.plugin_configuration.search_api_solr_connector.standard
+  label: Acquia Search Solr connector settings
