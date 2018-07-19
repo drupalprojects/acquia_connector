@@ -46,6 +46,8 @@ before_script:
   # Download all composer dependencies and install Drupal site.
   - cd $TRAVIS_BUILD_DIR/../drupal
   - composer install
+  - composer require drupal/search_api:^1.9
+  - composer require drupal/search_api_solr:^1.2
   - drush -v site-install testing --db-url=mysql://root:@localhost/drupal --yes
   - drush en --yes simpletest
 
