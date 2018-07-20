@@ -38,7 +38,7 @@ install:
 
   # Download Drupal.
   - cd $TRAVIS_BUILD_DIR/..
-  - git clone --depth 1 --branch 8.5.x http://git.drupal.org/project/drupal.git
+  - git clone --depth 1 --branch 8.4.x http://git.drupal.org/project/drupal.git
 
   - echo "error_log=syslog" >> `php --ini | grep "Loaded Configuration" | awk '{print $4}'`
 
