@@ -10,7 +10,7 @@
     }
   },
     "require": {
-        "drupal/search_api": "^1.9",
+        "drupal/search_api": "^1.8",
         "drupal/search_api_solr": "^1.2"
     }
 }
