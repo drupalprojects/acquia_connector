@@ -1038,7 +1038,7 @@ class SpiController extends ControllerBase {
         if (!empty($response['body']['spi_error'])) {
           $message_type = $response['body']['spi_error'];
         }
-        drupal_set_message(Html::escape($nspi_message), $message_type);
+        drupal_set_message(Html::escape($nspi_message), (string) $message_type);
       }
     }
 
